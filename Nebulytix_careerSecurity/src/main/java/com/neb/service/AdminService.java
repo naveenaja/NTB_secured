@@ -7,10 +7,12 @@ import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.neb.dto.*;
+import com.neb.dto.client.ClientDto;
 import com.neb.dto.user.AdminProfileDto;
 import com.neb.dto.user.RegisterNewClientRequest;
 import com.neb.dto.user.RegisterNewUerRequest;
 import com.neb.dto.user.UserDto;
+import com.neb.entity.Project;
 
 public interface AdminService {
 
@@ -43,4 +45,9 @@ public interface AdminService {
 	//public AddEmployeeResponseDto addAdmin(AddEmployeeRequestDto addEmpReq);
 
 	public String deleteAdmin(Long id);
+	
+	
+	List<ClientDto> getClientList();
+//    Project addProject(AddProjectRequestDto req);
+
 }

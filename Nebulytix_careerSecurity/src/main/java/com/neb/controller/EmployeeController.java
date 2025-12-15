@@ -62,9 +62,7 @@ public class EmployeeController {
 	 // Get employee details
     @GetMapping("/get/{id}")
     public ResponseMessage<Employee> getEmployee(@PathVariable Long id) {
-    	System.out.println(id);
         Employee emp = employeeService.getEmployeeById(id);
-        System.out.println(emp);
         return new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(), "Employee fetched successfully", emp);
     }
     
@@ -159,23 +157,6 @@ public class EmployeeController {
         }
     }
 
-    // GET /api/employees/hr-employee
-    @GetMapping("fetch/hr-employee")
-    public ResponseEntity<ResponseMessage<List<EmployeeDetailsResponseDto>>> getAllHrAndEmployee() {
-          List<EmployeeDetailsResponseDto> allHrAndEmployee = employeeService.getAllHrAndEmployee();
-//        return new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(), "Employee and HR fetched successfully", employees);
-        return ResponseEntity.ok(
-              new ResponseMessage<>(200, "OK", "Hr And Employee fetched successfully", allHrAndEmployee)
-      );
-    }
     
- // GET /api/employees/hr-employee
-    @GetMapping("fetch/employee")
-    public ResponseEntity<ResponseMessage<List<EmployeeDetailsResponseDto>>> getAllEmployees() {
-          List<EmployeeDetailsResponseDto> allHrAndEmployee = employeeService.getAllOnlyEmployee();
-          return ResponseEntity.ok(
-              new ResponseMessage<>(200, "OK", "Employee fetched successfully", allHrAndEmployee)
-      );
-    }
   
 }
