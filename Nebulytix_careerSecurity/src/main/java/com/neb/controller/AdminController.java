@@ -280,6 +280,7 @@ public class AdminController {
 	              new ResponseMessage<>(200, "OK", "Clients fetched successfully", allClient)
 	      );
 	    }
+	    
 	    @GetMapping("/clients")
 	    public ResponseEntity<ResponseMessage<List<ClientDto>>> getClientList() {
 	        List<ClientDto> clients = adminService.getClientList();
