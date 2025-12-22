@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -50,6 +51,11 @@ public class UsersService implements UserDetailsService{
 		
 		Users users = usersRepository.findByEmail(email).orElseThrow(()->new UsernameNotFoundException("User not found: " + email));
 		
+		 //BLOCK if user disabled
+        if (!users.isEnabled()) {
+            throw new DisabledException("User account is disabled");
+        }
+       
 		List<SimpleGrantedAuthority> authorities = users.getRoles().stream()
 		.map(role->new SimpleGrantedAuthority(role.name())).collect(Collectors.toList());
 		

@@ -233,14 +233,24 @@ public class AdminServiceImpl implements AdminService{
 	@Override
 	public String deleteHr(Long id) {
 		
-		Optional<Employee> emp = empRepo.findById(id);	
-		if(emp.isPresent()) {
-			empRepo.deleteById(id);
-			return "Hr deleted with id:"+id;
-		}
-		else {
-			throw new ResourceNotFoundException("Hr not found with id :"+id);
-		}
+		Employee employee = empRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        // Soft delete employee
+        employee.setEmpStatus("inactive");
+
+        // Disable linked user
+        Users user = employee.getUser();
+        if (user != null) {
+            user.setEnabled(false);
+            usersRepository.save(user);
+        }
+
+        empRepo.save(employee);
+
+        return "Employee and user account deactivated successfully";
+    
+	    
 	}
 
 	@Override
