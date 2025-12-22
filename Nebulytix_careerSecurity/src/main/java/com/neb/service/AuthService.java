@@ -117,6 +117,11 @@ public class AuthService {
 
         // roles & dashboard also needed on frontend when refreshing
         Users user = refreshToken.getUser();
+        
+        if (!user.isEnabled()) {
+            throw new RuntimeException("User account is disabled");
+        }
+        
         Set<String> roles = user.getRoles().stream()
                 .map(Enum::name)
                 .collect(Collectors.toSet());
