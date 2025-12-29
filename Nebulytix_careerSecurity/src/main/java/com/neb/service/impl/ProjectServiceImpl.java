@@ -249,11 +249,8 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public ProjectsResponseDto getActiveProjectsByEmployee(Long employeeId) {
-		 Project project = projectRepository
-                .findOngoingProjectsByEmployeeId(employeeId)
-                .stream()
-                .findFirst().orElseThrow(()-> new CustomeException("Project Not Found"));
-		return mapper.map(project, ProjectsResponseDto.class);
+		 Project project = empRepo.findProjectByEmployeeId(employeeId);
+		 return mapper.map(project, ProjectsResponseDto.class);
 	}
 
 	@Override
