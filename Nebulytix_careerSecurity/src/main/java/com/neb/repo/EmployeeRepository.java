@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.neb.entity.Client;
 import com.neb.entity.Employee;
+import com.neb.entity.Project;
 import com.neb.entity.Users;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
@@ -73,5 +74,13 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     
     @Query("SELECT e FROM Project p JOIN p.employees e WHERE p.id = :projectId")
     List<Employee> findEmployeesByProjectId(@Param("projectId") Long projectId);
+    
+    @Query("""
+            SELECT p
+            FROM Employee e
+            JOIN e.project p
+            WHERE e.id = :employeeId
+        """)
+        Project findProjectByEmployeeId(@Param("employeeId") Long employeeId);
 
 }
