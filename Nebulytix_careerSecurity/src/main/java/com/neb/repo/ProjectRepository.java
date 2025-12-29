@@ -25,4 +25,12 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 		        ORDER BY p.startDate DESC
 		    """)
 		    List<Project> findOngoingProjectsByEmployeeId(@Param("employeeId") Long employeeId);
+	 
+	 @Query("""
+		        SELECT p 
+		        FROM Project p
+		        JOIN p.employees e
+		        WHERE e.id = :employeeId
+		    """)
+		    List<Project> findProjectsByEmployeeId(@Param("employeeId") Long employeeId);
 }

@@ -22,7 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.neb.dto.AddDailyReportRequestDto;
 import com.neb.dto.GeneratePayslipRequest;
 import com.neb.dto.PayslipDto;
-import com.neb.dto.ProjectResponseDto;
 import com.neb.dto.ResponseMessage;
 import com.neb.dto.WorkResponseDto;
 import com.neb.dto.employee.EmployeeProfileDto;
@@ -167,6 +166,12 @@ public class EmployeeController {
     public ResponseEntity<ResponseMessage<ProjectsResponseDto>> getActiveProjects(@PathVariable Long employeeId) {
     	ProjectsResponseDto project = projectService.getActiveProjectsByEmployee(employeeId);
         return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(),"Project fetched successfully based on emp id ", project));
+    }
+    
+    @GetMapping("listProj/{employeeId}")
+    public ResponseEntity<ResponseMessage<List<ProjectsResponseDto>>> getEmployeeProjects(@PathVariable Long employeeId) {
+        List<ProjectsResponseDto> projects = projectService.getProjectsByEmployeeId(employeeId);
+        return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(),"All Project fetched successfully based on emp id ", projects));
     }
    
   

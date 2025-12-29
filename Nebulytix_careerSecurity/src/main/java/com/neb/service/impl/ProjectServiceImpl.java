@@ -252,4 +252,13 @@ public class ProjectServiceImpl implements ProjectService {
                 .findFirst().orElseThrow(()-> new CustomeException("Project Not Found"));
 		return mapper.map(project, ProjectsResponseDto.class);
 	}
+
+	@Override
+	public List<ProjectsResponseDto> getProjectsByEmployeeId(Long employeeId) {
+		 List<Project> projects = projectRepository.findProjectsByEmployeeId(employeeId);
+		 
+		 return projects.stream()
+		            .map(project -> mapper.map(project, ProjectsResponseDto.class))
+		            .toList();
+	}
 }

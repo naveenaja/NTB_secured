@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
+
 import com.neb.dto.ProjectResponseDto;
 import com.neb.dto.ResponseMessage;
 import com.neb.dto.UpdateProjectRequestDto;
@@ -34,5 +35,7 @@ public interface ProjectService {
 
    void removeEmployeeFromProject(Long projectId, Long employeeId);
 
-   ProjectsResponseDto getActiveProjectsByEmployee(Long employeeId);
+  public ProjectsResponseDto getActiveProjectsByEmployee(Long employeeId);
+
+   public List<ProjectsResponseDto> getProjectsByEmployeeId(Long employeeId);
 }
