@@ -8,11 +8,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.neb.dto.AddWorkRequestDto;
 import com.neb.dto.EmployeeDetailsResponseDto;
-import com.neb.dto.UpdateEmployeeRequestDto;
 import com.neb.dto.WorkResponseDto;
 import com.neb.dto.client.ClientDto;
 import com.neb.dto.client.ClientProfileDto;
+import com.neb.dto.client.UpdateClientRequest;
 import com.neb.dto.employee.EmployeeProfileDto;
+import com.neb.dto.employee.UpdateEmployeeRequestDto;
 import com.neb.dto.user.AdminProfileDto;
 import com.neb.dto.user.RegisterNewClientRequest;
 import com.neb.dto.user.RegisterNewUerRequest;
@@ -41,6 +42,8 @@ public interface AdminService {
 
     
     public String deleteHr(Long id);
+    
+    public String deleteClient(Long id);
   
     public byte[] generateDailyReport(LocalDate date)throws Exception;
     public EmployeeDetailsResponseDto updateHrDetails(Long id, UpdateEmployeeRequestDto dto);
@@ -58,5 +61,6 @@ public interface AdminService {
 	public List<EmployeeProfileDto> getOnlyEmployee();
 	public List<EmployeeProfileDto> getOnlyManager();
 	public List<ClientProfileDto> getOnlyClient();
+	public ClientProfileDto updateClient(Long clientId, UpdateClientRequest req);
 
 }

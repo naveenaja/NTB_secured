@@ -23,7 +23,8 @@ import com.neb.dto.EmployeeLeaveDTO;
 import com.neb.dto.EmployeeMonthlyReportDTO;
 import com.neb.dto.JobDetailsDto;
 import com.neb.dto.PayslipDto;
-import com.neb.dto.UpdateEmployeeRequestDto;
+import com.neb.dto.employee.UpdateEmployeeRequestDto;
+import com.neb.dto.employee.UpdateEmployeeResponseDto;
 import com.neb.dto.salary.SalaryRequestDto;
 import com.neb.dto.salary.SalaryResponseDto;
 import com.neb.entity.DailyReport;
@@ -140,30 +141,6 @@ public class HrServiceImpl implements HrService {
         emp.setDaysPresent(days);
         return mapper.map(empRepo.save(emp), EmployeeDetailsResponseDto.class);
     }
-
-    @Override
-    public EmployeeDetailsResponseDto updateEmployee(Long id, UpdateEmployeeRequestDto updateReq) {
-        Employee emp = empRepo.findById(id).orElseThrow(() -> new CustomeException("Employee not found"));
-
-        if (updateReq.getFirstName() != null) emp.setFirstName(updateReq.getFirstName());
-        if (updateReq.getLastName() != null) emp.setLastName(updateReq.getLastName());
- //       if (updateReq.getEmail() != null) emp.setEmail(updateReq.getEmail());
-        if (updateReq.getMobile() != null) emp.setMobile(updateReq.getMobile());
-        if (updateReq.getSalary() != null) emp.setSalary(updateReq.getSalary());
-        if (updateReq.getPaidLeaves() != 0) emp.setPaidLeaves(updateReq.getPaidLeaves());
-
-//        if (updateReq.getBankAccountNumber() != null) emp.setBankAccountNumber(updateReq.getBankAccountNumber());
-//        if (updateReq.getIfscCode() != null) emp.setIfscCode(updateReq.getIfscCode());
-//        if (updateReq.getBankName() != null) emp.setBankName(updateReq.getBankName());
-//        if (updateReq.getPfNumber() != null) emp.setPfNumber(updateReq.getPfNumber());
-//        if (updateReq.getPanNumber() != null) emp.setPanNumber(updateReq.getPanNumber());
-//        if (updateReq.getUanNumber() != null) emp.setUanNumber(updateReq.getUanNumber());
-//        if (updateReq.getEpsNumber() != null) emp.setEpsNumber(updateReq.getEpsNumber());
-//        if (updateReq.getEsiNumber() != null) emp.setEsiNumber(updateReq.getEsiNumber());
-
-        return mapper.map(empRepo.save(emp), EmployeeDetailsResponseDto.class);
-    }
-
 
     // ======================= PAYSLIP METHODS =========================
     @Override

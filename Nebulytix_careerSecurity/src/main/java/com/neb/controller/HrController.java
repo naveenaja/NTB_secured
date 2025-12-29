@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ContentDisposition;
@@ -12,7 +11,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +19,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -37,7 +34,6 @@ import com.neb.dto.EmployeeLeaveDTO;
 import com.neb.dto.EmployeeMonthlyReportDTO;
 import com.neb.dto.GeneratePayslipRequest;
 import com.neb.dto.JobDetailsDto;
-import com.neb.dto.LoginRequestDto;
 import com.neb.dto.PayslipDto;
 import com.neb.dto.ResponseDTO;
 import com.neb.dto.ResponseMessage;
@@ -45,6 +41,8 @@ import com.neb.dto.UpdateEmployeeRequestDto;
 import com.neb.dto.UpdatePasswordRequestDto;
 
 import com.neb.dto.employee.EmployeeProfileDto;
+import com.neb.dto.employee.UpdateEmployeeRequestDto;
+import com.neb.dto.employee.UpdateEmployeeResponseDto;
 import com.neb.dto.salary.SalaryRequestDto;
 import com.neb.dto.salary.SalaryResponseDto;
 import com.neb.dto.user.RegisterNewUerRequest;
@@ -53,6 +51,7 @@ import com.neb.dto.user.UserDto;
 import com.neb.entity.EmployeeBankDetails;
 import com.neb.entity.JobApplication;
 
+import com.neb.entity.JobApplication;
 import com.neb.entity.Payslip;
 import com.neb.repo.EmployeeLeaveType;
 import com.neb.service.AdminService;
@@ -101,6 +100,7 @@ public class HrController {
             new ResponseMessage(200, "OK", "User created successfully")
         );
     }
+    
     
    //====================== salary part ==============================
     @PostMapping("/add/salary")
@@ -176,9 +176,9 @@ public class HrController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<ResponseMessage<EmployeeDetailsResponseDto>> updateEmployee(@PathVariable Long id, @RequestBody UpdateEmployeeRequestDto updateReq) {
-        EmployeeDetailsResponseDto updatedEmp = service.updateEmployee(id, updateReq);
-        return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(), "Employee details updated successfully", updatedEmp));
+    public ResponseEntity<ResponseMessage<UpdateEmployeeResponseDto>> updateEmployee(@PathVariable Long id, @RequestBody UpdateEmployeeRequestDto updateReq) {
+    	 employeeService.updateEmployee((Long) id, updateReq);
+    	 return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(), "Employee details updated successfully"));
     }
     
     //=============================== jobs ===============================
@@ -229,7 +229,7 @@ public class HrController {
         return ResponseEntity.ok(new ResponseMessage<>(200, "OK", msg, null));
     }
 
- // Send email to all shortlisted applicants
+       // Send email to all shortlisted applicants
     @PostMapping("/job/sendShortlistedEmails")
     public ResponseEntity<ResponseMessage<List<JobApplication>>> sendShortlistedEmails(@RequestBody EmailRequestDto emailRequest) {
         List<JobApplication> updatedApplicants = service.sendEmailsToShortlisted(emailRequest.getSubject(), emailRequest.getMessage());

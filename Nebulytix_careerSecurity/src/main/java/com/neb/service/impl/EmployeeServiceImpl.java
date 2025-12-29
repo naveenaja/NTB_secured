@@ -24,9 +24,12 @@ import com.neb.constants.WorkStatus;
 import com.neb.dto.AddDailyReportRequestDto;
 import com.neb.dto.EmployeeDTO;
 import com.neb.dto.EmployeeLeaveDTO;
+import com.neb.dto.EmployeeResponseDto;
 import com.neb.dto.WorkResponseDto;
 import com.neb.dto.employee.AddEmployeeRequest;
 import com.neb.dto.employee.EmployeeProfileDto;
+import com.neb.dto.employee.UpdateEmployeeRequestDto;
+import com.neb.dto.employee.UpdateEmployeeResponseDto;
 import com.neb.entity.DailyReport;
 import com.neb.entity.Employee;
 import com.neb.entity.EmployeeLeaveBalance;
@@ -614,6 +617,56 @@ public class EmployeeServiceImpl implements EmployeeService {
 	       return dto;
 	   }
 
+
+
+
+	@Override
+	public UpdateEmployeeResponseDto updateEmployee(Long employeeId, UpdateEmployeeRequestDto dto) {
+		 Employee employee = employeeRepository.findById(employeeId)
+	                .orElseThrow(() ->
+	                        new RuntimeException("Employee not found with id: " + employeeId));
+
+	        // ===== Update Employee fields =====
+	       if(dto.getFirstName() != null) employee.setFirstName(dto.getFirstName());
+	       if(dto.getLastName()!=null) employee.setLastName(dto.getLastName());
+	       if(dto.getMobile()!=null)  employee.setMobile(dto.getMobile());
+	       if(dto.getCardNumber()!=null) employee.setCardNumber(dto.getCardNumber());
+	       if(dto.getDepartment()!=null)  employee.setDepartment(dto.getDepartment());
+	       if(dto.getDesignation()!= null) employee.setDesignation(dto.getDesignation());
+	       if(dto.getGender() !=null) employee.setGender(dto.getGender());
+	       employee.setPaidLeaves(dto.getPaidLeaves());
+            
+	        // ===== Update User email =====
+	        Users user = employee.getUser();
+	        if (user != null && dto.getEmail() != null) { 
+	            user.setEmail(dto.getEmail());
+	        }
+
+	        Employee savedEmployee = employeeRepository.save(employee);
+            
+	        
+	        UpdateEmployeeResponseDto response = new UpdateEmployeeResponseDto();
+
+	        response.setId(employee.getId());
+	        response.setFirstName(employee.getFirstName());
+	        response.setLastName(employee.getLastName());
+	        response.setMobile(employee.getMobile());
+	        response.setCardNumber(employee.getCardNumber());
+	        response.setGender(employee.getGender());
+	        response.setJoiningDate(employee.getJoiningDate());
+	        response.setDaysPresent(employee.getDaysPresent());
+	        response.setPaidLeaves(employee.getPaidLeaves());
+            response.setDepartment(employee.getDepartment());
+            response.setDesignation(employee.getDesignation());
+	        // User data
+	        Users user1 = employee.getUser();
+	        if (user1 != null) {
+	            response.setEmail(user1.getEmail());
+	           
+	        }
+
+          return response;
+	}
 
 	
 }

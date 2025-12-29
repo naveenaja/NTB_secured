@@ -20,11 +20,12 @@ import org.springframework.web.multipart.MultipartFile;
 import com.neb.constants.WorkStatus;
 import com.neb.dto.AddWorkRequestDto;
 import com.neb.dto.EmployeeDetailsResponseDto;
-import com.neb.dto.UpdateEmployeeRequestDto;
 import com.neb.dto.WorkResponseDto;
 import com.neb.dto.client.ClientDto;
 import com.neb.dto.client.ClientProfileDto;
+import com.neb.dto.client.UpdateClientRequest;
 import com.neb.dto.employee.EmployeeProfileDto;
+import com.neb.dto.employee.UpdateEmployeeRequestDto;
 import com.neb.dto.user.AdminProfileDto;
 import com.neb.dto.user.RegisterNewClientRequest;
 import com.neb.dto.user.RegisterNewUerRequest;
@@ -254,6 +255,28 @@ public class AdminServiceImpl implements AdminService{
 	}
 
 	@Override
+	public String deleteClient(Long id) {
+		
+		Client client = clientRepo.findById(id)
+				.orElseThrow(() -> new CustomeException("Client not found with id :"+id));
+		
+		// 2. Mark client inactive
+        client.setStatus("inactive");
+
+        // 3. Disable related user
+        Users user = client.getUser();
+        if (user != null) {
+            user.setEnabled(false);
+            usersRepository.save(user); //  updates users table
+        }
+
+        // 4. Save client
+        clientRepo.save(client);
+        
+        return "Client and user account deactivated successfully";
+	}
+	
+	@Override
 	public EmployeeDetailsResponseDto getEmployee(Long id) {
 
 		Employee emp = empRepo.findById(id).orElseThrow(()->new ResourceNotFoundException("Employee not found wuith id :"+id));
@@ -271,6 +294,7 @@ public class AdminServiceImpl implements AdminService{
 	    byte[] dailyReportPDF = pdfGenerator.generateReportPDF(works, date);
 	    return dailyReportPDF;
 	}
+	
 	@Override
 	public EmployeeDetailsResponseDto updateHrDetails(Long id, UpdateEmployeeRequestDto updateReq) {
 
@@ -299,9 +323,6 @@ public class AdminServiceImpl implements AdminService{
 	        hr.setGender(updateReq.getGender());
 
 	    // -------- SALARY + LEAVES --------
-	    if (updateReq.getSalary() != null)
-	        hr.setSalary(updateReq.getSalary());
-
 	    if (updateReq.getPaidLeaves() != 0)
 	        hr.setPaidLeaves(updateReq.getPaidLeaves());
 
@@ -340,15 +361,12 @@ public class AdminServiceImpl implements AdminService{
 	@Override
 	public String deleteAdmin(Long id)
 	{
-
-		Optional<Employee> emp = empRepo.findById(id);	
-		if(emp.isPresent()) {
-			empRepo.deleteById(id);
-			return "Admin deleted with id:"+id;
-		}
-		else {
-			throw new CustomeException("Admin not found with id :"+id);
-		}
+		  Users users=usersRepository.findById(id)
+				      .orElseThrow(() ->new CustomeException("Admin not found with id: " + id));
+		  
+		users.setEnabled(false);
+		usersRepository.save(users);
+		return "Admin soft deleted with id: " + users.getId();
 	}
 
 	@Override
@@ -390,6 +408,7 @@ public class AdminServiceImpl implements AdminService{
 	@Override
 	public List<EmployeeProfileDto> getOnlyHr() {
 		 List<Employee> employees = empRepo.findOnlyHr();
+		 System.out.println("service hr ==> "+employees);
 		 
 		 return employees.stream()
 			        .map(emp -> {
@@ -447,7 +466,7 @@ public class AdminServiceImpl implements AdminService{
 	public List<EmployeeProfileDto> getOnlyManager() 
 	{ 
 		List<Employee> employees = empRepo.findOnlyManager();
-	 
+		 System.out.println("service Managers ==> "+employees);
 	 return employees.stream()
 		        .map(emp -> {
 		            EmployeeProfileDto dto = new EmployeeProfileDto();
@@ -498,6 +517,28 @@ public class AdminServiceImpl implements AdminService{
 	        })
 	        .collect(Collectors.toList());
      
+	}
+
+	@Override
+	public ClientProfileDto updateClient(Long clientId, UpdateClientRequest req) {
+		Client client = clientRepo.findById(clientId)
+                .orElseThrow(() ->
+                        new RuntimeException("Client not found with id: " + clientId));
+
+        client.setCompanyName(req.getCompanyName());
+        client.setContactPerson(req.getContactPerson());
+        client.setContactEmail(req.getContactEmail());
+        client.setPhone(req.getPhone());
+        client.setAlternatePhone(req.getAlternatePhone());
+        client.setAddress(req.getAddress());
+        client.setWebsite(req.getWebsite());
+        client.setIndustryType(req.getIndustryType());
+        client.setGstNumber(req.getGstNumber());
+        client.setUpdatedDate(LocalDate.now());
+        Client save = clientRepo.save(client);
+        
+        return mapper.map(save, ClientProfileDto.class);
+		
 	}
 
 	

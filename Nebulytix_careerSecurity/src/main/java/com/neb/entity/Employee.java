@@ -26,10 +26,14 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.ToString;
 
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "employees")
-@Data
+//@Data
+@Getter
+@Setter
 @SQLDelete(sql = "update employees set emp_status='inactive' where id=?")
 @SQLRestriction("emp_status<> 'inactive'")
 @ToString(exclude = {"employeeSessions","leaves","leaveBalance","montlyReport"})
