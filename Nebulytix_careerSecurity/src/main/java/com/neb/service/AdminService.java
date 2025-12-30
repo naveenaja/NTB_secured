@@ -37,15 +37,15 @@ public interface AdminService {
     public String deleteClient(Long id);
     public byte[] generateDailyReport(LocalDate date)throws Exception;
     public EmployeeDetailsResponseDto updateHrDetails(Long id, UpdateEmployeeRequestDto dto);
-      //public AddEmployeeResponseDto addAdmin(AddEmployeeRequestDto addEmpReq);
     public String deleteAdmin(Long id);
     public List<AdminProfileDto> getOnlyAdmin();
 	public List<ClientDto> getClientList();
-     //Project addProject(AddProjectRequestDto req);
 	public List<EmployeeProfileDto> getOnlyHr();
 	public List<EmployeeProfileDto> getOnlyEmployee();
 	public List<EmployeeProfileDto> getOnlyManager();
 	public List<ClientProfileDto> getOnlyClient();
 	public ClientProfileDto updateClient(Long clientId, UpdateClientRequest req);
+	public String disableAdmin(Long id);
+	public String enableAdmin(Long id);
 
 }

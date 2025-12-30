@@ -329,11 +329,28 @@ public class AdminServiceImpl implements AdminService{
 	public String deleteAdmin(Long id)
 	{
 	    Users users=usersRepository.findById(id).orElseThrow(() ->new CustomeException("Admin not found with id: " + id));
-		users.setEnabled(false);
-		usersRepository.save(users);
-      return "Admin soft deleted with id: " + users.getId();
+	    if (users.isEnabled()) {
+	        throw new CustomeException("Admin must be disabled before deletion. Disable admin with id: " + id); }
+	    usersRepository.delete(users);
+      return "Admin  deleted with id: " + users.getId();
+	}
+    
+	@Override
+	public String disableAdmin(Long id) {
+		 Users users=usersRepository.findById(id).orElseThrow(() ->new CustomeException("Admin not found with id: " + id));
+			users.setEnabled(false);
+			usersRepository.save(users);
+	      return "Admin Disabled with id: " + users.getId();
 	}
 
+	@Override
+	public String enableAdmin(Long id) {
+		Users users=usersRepository.findById(id).orElseThrow(() ->new CustomeException("Admin not found with id: " + id));
+		users.setEnabled(true);
+		usersRepository.save(users);
+      return "Admin Enabled with id: " + users.getId();
+	}
+	
 	@Override
 	public List<AdminProfileDto> getOnlyAdmin() 
 	{
@@ -501,6 +518,8 @@ public class AdminServiceImpl implements AdminService{
        return mapper.map(save, ClientProfileDto.class);
 		
 	}
+
+	
 
 	
 }

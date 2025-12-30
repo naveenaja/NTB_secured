@@ -129,6 +129,18 @@ public class AdminController {
 	    	String deleteRes = adminService.deleteAdmin(id);
 	    	return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Admin deleted successfully", deleteRes));
 	    }
+	    
+	    @PutMapping("/{id}/disable")
+	    public ResponseEntity<ResponseMessage<?>> disableAdmin(@PathVariable Long id) {
+	    	String msg = adminService.disableAdmin(id);
+	    	return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Admin Disabled successfully", msg));
+	    }
+
+	    @PutMapping("/{id}/enable")
+	    public ResponseEntity<ResponseMessage<?>> enableAdmin(@PathVariable Long id) {
+	    	String msg = adminService.enableAdmin(id);
+	        return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Admin Enabled successfully", msg));
+	    }
 	    // delete (HR,MANAGER,EMPLOYEE) by id
 	    @DeleteMapping("/delete/hr/{id}")
 	    public ResponseEntity<ResponseMessage<?>> deleteHr(@PathVariable Long id){
