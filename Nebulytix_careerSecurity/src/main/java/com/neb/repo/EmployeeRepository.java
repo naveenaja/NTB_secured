@@ -15,11 +15,7 @@ import com.neb.entity.Users;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
-//    public boolean existsByEmail(String email);
-//    public Optional<Employee> findByEmail(String email);
-    Optional<Employee> findByUserId(Long userId);
-    
-   
+   public Optional<Employee> findByUserId(Long userId);
     
     @Query("""
     	    SELECT DISTINCT e
@@ -29,7 +25,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
                AND com.neb.constants.Role.ROLE_ADMIN NOT MEMBER OF u.roles
               AND com.neb.constants.Role.ROLE_MANAGER NOT MEMBER OF u.roles
     	    """)
-    	List<Employee> findOnlyHr();
+    public List<Employee> findOnlyHr();
     
 
     @Query("""
@@ -40,18 +36,18 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
                AND com.neb.constants.Role.ROLE_HR NOT MEMBER OF u.roles
                AND com.neb.constants.Role.ROLE_MANAGER NOT MEMBER OF u.roles
         """)
-        List<Employee> findOnlyEmployees();
+       public List<Employee> findOnlyEmployees();
 
     
-    //new 
+    
     @Query("""
     		 SELECT DISTINCT u
              FROM Users u
              WHERE com.neb.constants.Role.ROLE_ADMIN MEMBER OF u.roles
               """)
-    List<Users> findOnlyAdmin();
+   public List<Users> findOnlyAdmin();
     
-    List<Employee> findByProject_Id(Long projectId);
+    public List<Employee> findByProject_Id(Long projectId);
     
     @Query("""
     	    SELECT DISTINCT e
@@ -60,7 +56,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
               WHERE com.neb.constants.Role.ROLE_MANAGER MEMBER OF u.roles
               AND com.neb.constants.Role.ROLE_CLIENT NOT MEMBER OF u.roles
     	    """)
-    List<Employee> findOnlyManager();
+    public List<Employee> findOnlyManager();
    
     @Query("""
     	    SELECT DISTINCT c
@@ -71,11 +67,11 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     	      AND com.neb.constants.Role.ROLE_HR NOT MEMBER OF u.roles
     	      AND com.neb.constants.Role.ROLE_MANAGER NOT MEMBER OF u.roles
     	""")
-    	List<Client> findOnlyClients();
+    public List<Client> findOnlyClients();
 
     
     @Query("SELECT e FROM Project p JOIN p.employees e WHERE p.id = :projectId")
-    List<Employee> findEmployeesByProjectId(@Param("projectId") Long projectId);
+    public  List<Employee> findEmployeesByProjectId(@Param("projectId") Long projectId);
     
     @Query("""
             SELECT p
@@ -83,6 +79,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
             JOIN e.project p
             WHERE e.id = :employeeId
         """)
-        Project findProjectByEmployeeId(@Param("employeeId") Long employeeId);
+     public  Project findProjectByEmployeeId(@Param("employeeId") Long employeeId);
 
 }

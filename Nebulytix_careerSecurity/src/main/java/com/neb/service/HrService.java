@@ -22,7 +22,7 @@ import com.neb.util.ApprovalStatus;
 
 public interface HrService {
    
-    //List<EmployeeDetailsResponseDto> getEmployeeList();
+    
     EmployeeDetailsResponseDto getEmployee(Long id);
     String deleteById(Long id);
     EmployeeDetailsResponseDto addAttendence(Long id, int days);
@@ -53,21 +53,15 @@ public interface HrService {
     void sendEmailToSingleApplicant(Long applicantId, String subject, String message);
     
     public void deletePayslip(Long id); 
-    
     public SalaryResponseDto addSalary(SalaryRequestDto salRequestDto);
 	public SalaryResponseDto getActiveSalary(Long employeeId);
 	public List<SalaryResponseDto> getAllActiveSalaries();
 	public SalaryResponseDto updateSalary(Long salaryId, SalaryRequestDto dto);
-	public String deleteSalary(Long salaryId);
-	 EmployeeBankDetailsResponse addOrUpdateBankDetails(
-	            Long employeeId,
-	            EmployeeBankDetailsRequest request
-	    );
-	 public List<EmployeeLeaveDTO> leaves(ApprovalStatus status);
-	 public EmployeeLeaveDTO approvalOrReject(Long leaveId, ApprovalStatus status) ;
-	 public List<EmployeeMonthlyReportDTO> generateMontlyReport();
-//	 private Boolean reportAlreadyExists(Employee employee, int year, int month) ;
-	 public EmployeeMonthlyReportDTO getMonthlyReportOfEmployee(Long employeeId, Integer year, Integer month);
-	 public List<EmployeeLeaveDTO> employeeOnLeave();
+	public String deleteSalary(Long salaryId); 
+	public List<EmployeeLeaveDTO> leaves(ApprovalStatus status);
+	public EmployeeLeaveDTO approvalOrReject(Long leaveId, ApprovalStatus status) ;
+	public List<EmployeeMonthlyReportDTO> generateMontlyReport();
+    public EmployeeMonthlyReportDTO getMonthlyReportOfEmployee(Long employeeId, Integer year, Integer month);
+	public List<EmployeeLeaveDTO> employeeOnLeave();
 
 }

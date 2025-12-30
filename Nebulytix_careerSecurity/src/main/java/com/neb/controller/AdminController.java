@@ -129,7 +129,7 @@ public class AdminController {
 	    	String deleteRes = adminService.deleteAdmin(id);
 	    	return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Admin deleted successfully", deleteRes));
 	    }
-	    // delete hr by id
+	    // delete (HR,MANAGER,EMPLOYEE) by id
 	    @DeleteMapping("/delete/hr/{id}")
 	    public ResponseEntity<ResponseMessage<?>> deleteHr(@PathVariable Long id){
 	    	String deleteRes = adminService.deleteHr(id);
@@ -265,6 +265,8 @@ public class AdminController {
 	      );
 	    }
 	    
+//	    ========================== Project Part ==================================
+	    
 	    @PostMapping(
 	            value = "/project/add",
 	            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
@@ -346,7 +348,7 @@ public class AdminController {
 	    @PostMapping("add/project/{projectId}/employees/{employeeId}")
 	    public ResponseEntity<ProjectResponseDto> addEmployeeToProject(@PathVariable Long projectId,@PathVariable Long employeeId)
 	    {
-	    	 ProjectResponseDto employeeToProject = projectService.addEmployeeToProject(projectId, employeeId);
+	        ProjectResponseDto employeeToProject = projectService.addEmployeeToProject(projectId, employeeId);
 	        return ResponseEntity.ok(employeeToProject);
 	    }
 	    
@@ -354,9 +356,7 @@ public class AdminController {
 	    @GetMapping("view/projects/{projectId}/employees")
 	    public ResponseEntity<ResponseMessage<List<EmployeeResponseDto>>> getEmployeesByProject(@PathVariable Long projectId) {
 	    	List<EmployeeResponseDto> employees = clientService.getEmployeesByProject(projectId);
-	        return ResponseEntity.ok(
-	                new ResponseMessage<>(200, "SUCCESS", "Employees for project fetched successfully", employees)
-	        );
+	        return ResponseEntity.ok(new ResponseMessage<>(200, "SUCCESS", "Employees for project fetched successfully", employees));
 	    }
 	    
 	    @DeleteMapping("delete/{projectId}/employees/{employeeId}")
@@ -370,12 +370,10 @@ public class AdminController {
 	    
 	    @PutMapping("/update-client/{clientId}")
 	    public ResponseEntity<ResponseMessage<ClientProfileDto>> updateClient(
-	            @PathVariable Long clientId,
-	            @RequestBody UpdateClientRequest req) {
+	                                                                           @PathVariable Long clientId,
+	                                                                           @RequestBody UpdateClientRequest req) {
 
 	        ClientProfileDto updateClient = adminService.updateClient(clientId, req);
-
-	        return ResponseEntity.ok(
-	                new ResponseMessage<>(200, "OK", "Client updated successfully",updateClient));
+            return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Client updated successfully",updateClient));
 	    }
 }

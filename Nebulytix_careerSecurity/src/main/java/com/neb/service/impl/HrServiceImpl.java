@@ -391,44 +391,8 @@ public class HrServiceImpl implements HrService {
 		    return "Salary deactivated successfully";
 
 	}
-	 @Override
-	    public EmployeeBankDetailsResponse addOrUpdateBankDetails(
-	            Long employeeId,
-	            EmployeeBankDetailsRequest request) {
 
-	        Employee employee = empRepo.findById(employeeId)
-	                .orElseThrow(() -> new RuntimeException("Employee not found"));
-
-	        EmployeeBankDetails bankDetails = bankRepo
-	                .findByEmployeeId(employeeId)
-	                .orElse(new EmployeeBankDetails());
-
-	        bankDetails.setEmployee(employee);
-	        bankDetails.setBankAccountNumber(request.getBankAccountNumber());
-	        bankDetails.setIfscCode(request.getIfscCode());
-	        bankDetails.setBankName(request.getBankName());
-	        bankDetails.setPfNumber(request.getPfNumber());
-	        bankDetails.setPanNumber(request.getPanNumber());
-	        bankDetails.setUanNumber(request.getUanNumber());
-	        bankDetails.setEpsNumber(request.getEpsNumber());
-	        bankDetails.setEsiNumber(request.getEsiNumber());
-
-	        EmployeeBankDetails saved = bankRepo.save(bankDetails);
-
-	        return new EmployeeBankDetailsResponse(
-	                employee.getId(),
-	                saved.getBankAccountNumber(),
-	                saved.getIfscCode(),
-	                saved.getBankName(),
-	                saved.getPfNumber(),
-	                saved.getPanNumber(),
-	                saved.getUanNumber(),
-	                saved.getEpsNumber(),
-	                saved.getEsiNumber()
-	        );
-	    }
-
-	 public List<EmployeeLeaveDTO> leaves(ApprovalStatus status) {
+    public List<EmployeeLeaveDTO> leaves(ApprovalStatus status) {
 
 			List<EmployeeLeaves> pendingLeaves = empLeavesRepo.findByLeaveStatus(status);
 

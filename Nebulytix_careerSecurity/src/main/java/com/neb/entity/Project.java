@@ -78,11 +78,6 @@ public class Project {
     )
     private List<Employee> employees = new ArrayList<>();
     
-//    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
-//    private List<Employee> employees = new ArrayList<>();
-//    
-   
-
     // PROJECT DOCUMENTS
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProjectDocument> documents = new ArrayList<>();
