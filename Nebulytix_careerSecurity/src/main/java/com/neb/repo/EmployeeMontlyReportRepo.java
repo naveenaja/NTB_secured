@@ -14,11 +14,8 @@ public interface EmployeeMontlyReportRepo extends JpaRepository<EmployeeMonthlyR
 
     Optional<EmployeeMonthlyReport> findByEmployee_IdAndCurrentYearAndCurrentMonth(
             Long employeeId, Integer year, Integer month);
-
     List<EmployeeMonthlyReport> findByCurrentYearAndCurrentMonth(Integer year, Integer month);
-
     Optional<EmployeeMonthlyReport> findByEmployeeAndCurrentYearAndCurrentMonth(Employee employee, int year, int month);
-
     Optional<EmployeeMonthlyReport> findByIdAndCurrentYearAndCurrentMonth(Long id, int year, int month);
 
     @Query("SELECT emr FROM EmployeeMonthlyReport emr WHERE emr.employee.id = :empId AND emr.currentYear = :year AND emr.currentMonth = :month")

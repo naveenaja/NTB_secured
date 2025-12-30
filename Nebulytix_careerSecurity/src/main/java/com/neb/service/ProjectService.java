@@ -13,7 +13,7 @@ import com.neb.dto.project.ProjectsResponseDto;
 import com.neb.entity.Project;
 public interface ProjectService {
 	
-	  Project addProject(
+	  public Project addProject(
 	            AddProjectRequestDto dto,
 	            MultipartFile quotation,
 	            MultipartFile requirement,
@@ -21,21 +21,14 @@ public interface ProjectService {
 	            
 	    );
 
-    ResponseMessage<List<ProjectResponseDto>> getAllProjects();
-
-    ResponseMessage<ProjectResponseDto> getProjectById(Long id);
-
-    ResponseMessage<ProjectResponseDto> updateProject(Long id, UpdateProjectRequestDto dto);
-
-    ResponseMessage<String> deleteProject(Long id);
+    public ResponseMessage<List<ProjectResponseDto>> getAllProjects();
+    public ResponseMessage<ProjectResponseDto> getProjectById(Long id);
+    public ResponseMessage<ProjectResponseDto> updateProject(Long id, UpdateProjectRequestDto dto);
+    public ResponseMessage<String> deleteProject(Long id);
     public ProjectResponseDto updateProjectStatus(Long projectId, String status);
-    List<ProjectResponseDto> getProjectsByClient(Long clientId);
-    
-   public  ProjectResponseDto addEmployeeToProject(Long projectId, Long employeeId);
-
-   void removeEmployeeFromProject(Long projectId, Long employeeId);
-
-  public ProjectsResponseDto getActiveProjectsByEmployee(Long employeeId);
-
-   public List<ProjectsResponseDto> getProjectsByEmployeeId(Long employeeId);
+    public List<ProjectResponseDto> getProjectsByClient(Long clientId);
+    public  ProjectResponseDto addEmployeeToProject(Long projectId, Long employeeId);
+    public void removeEmployeeFromProject(Long projectId, Long employeeId);
+    public ProjectsResponseDto getActiveProjectsByEmployee(Long employeeId);
+    public List<ProjectsResponseDto> getProjectsByEmployeeId(Long employeeId);
 }

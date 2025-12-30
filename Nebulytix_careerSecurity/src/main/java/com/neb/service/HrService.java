@@ -22,36 +22,27 @@ import com.neb.util.ApprovalStatus;
 
 public interface HrService {
    
-    
-    EmployeeDetailsResponseDto getEmployee(Long id);
-    String deleteById(Long id);
-    EmployeeDetailsResponseDto addAttendence(Long id, int days);
-  
-  
-    // Payslip
-    byte[] downloadPayslip(Long payslipId) throws Exception;
-    List<PayslipDto> listPayslipsForEmployee(Long employeeId);
-
-    // Job management
-    JobDetailsDto addJob(AddJobRequestDto jobRequestDto);
-    List<JobDetailsDto> getAllJobs();
-    String deleteJob(Long jobId);
-
-    // Daily report
-    String generateDailyReport(LocalDate reportDate);
-    String getDailyReportUrl(LocalDate reportDate);
-
-    // Job application
-    void updateJobApplicationStatus(Long applicationId, Boolean status);
-    void sendInvitedEmailAndUpdateStatus(Long applicantId, String subject, String message);
-    void sendRejectedEmailAndUpdateStatus(Long applicantId, String subject, String message);
-
-    List<JobApplication> sendEmailsToShortlisted(String subject, String message);
-    List<JobApplication> sendEmailsToRejected(String subject, String message);
-
-    // Single applicant email
-    void sendEmailToSingleApplicant(Long applicantId, String subject, String message);
-    
+    public EmployeeDetailsResponseDto getEmployee(Long id);
+    public String deleteById(Long id);
+    public EmployeeDetailsResponseDto addAttendence(Long id, int days);
+      // Payslip
+    public byte[] downloadPayslip(Long payslipId) throws Exception;
+    public List<PayslipDto> listPayslipsForEmployee(Long employeeId);
+       // Job management
+    public JobDetailsDto addJob(AddJobRequestDto jobRequestDto);
+    public List<JobDetailsDto> getAllJobs();
+    public String deleteJob(Long jobId);
+      // Daily report
+    public String generateDailyReport(LocalDate reportDate);
+    public String getDailyReportUrl(LocalDate reportDate);
+      // Job application
+    public void updateJobApplicationStatus(Long applicationId, Boolean status);
+    public void sendInvitedEmailAndUpdateStatus(Long applicantId, String subject, String message);
+    public void sendRejectedEmailAndUpdateStatus(Long applicantId, String subject, String message);
+    public List<JobApplication> sendEmailsToShortlisted(String subject, String message);
+    public List<JobApplication> sendEmailsToRejected(String subject, String message);
+     // Single applicant email
+    public void sendEmailToSingleApplicant(Long applicantId, String subject, String message);
     public void deletePayslip(Long id); 
     public SalaryResponseDto addSalary(SalaryRequestDto salRequestDto);
 	public SalaryResponseDto getActiveSalary(Long employeeId);

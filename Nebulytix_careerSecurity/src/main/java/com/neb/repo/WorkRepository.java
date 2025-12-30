@@ -30,8 +30,8 @@ import com.neb.entity.Work;
 
 public interface WorkRepository extends JpaRepository<Work, Long> {
 
-    List<Work> findByEmployeeId(Long employeeId);
-    List<Work> findByEmployee(Employee emp);
-    List<Work> findBySubmittedDate(LocalDate submittedDate);
+   public List<Work> findByEmployeeId(Long employeeId);
+   public List<Work> findByEmployee(Employee emp);
+   public List<Work> findBySubmittedDate(LocalDate submittedDate);
     
 }

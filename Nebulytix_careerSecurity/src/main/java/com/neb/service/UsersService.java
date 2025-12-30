@@ -35,10 +35,8 @@ public class UsersService implements UserDetailsService{
 		
 	    if (usersRepository.existsByEmail(dto.getEmail())) {
 	    	throw new DuplicateResourceException("Email already exists: " + dto.getEmail());
-
-	    }
-
-	    Users user = new Users();
+         }
+        Users user = new Users();
 	    user.setEmail(dto.getEmail());
 	    user.setPassword(pwdEncoder.encode(dto.getPassword()));
 	    user.setRoles(dto.getRoles());
@@ -57,23 +55,17 @@ public class UsersService implements UserDetailsService{
         }
        
 		List<SimpleGrantedAuthority> authorities = users.getRoles().stream()
-		.map(role->new SimpleGrantedAuthority(role.name())).collect(Collectors.toList());
-		
-		
+		                                           .map(role->new SimpleGrantedAuthority(role.name())).collect(Collectors.toList());
 		User user = new User(users.getEmail(),users.getPassword(),authorities);
-	
-		return user;
+	   return user;
 	}
 	
 	public void deleteUser(Long id) {
-		
 		Users user = usersRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("user not found with id"+id));
 		usersRepository.deleteById(id);
 	}
 	
-	
 	public Users findByEmail(String email) {
-		
 		Users user = usersRepository.findByEmail(email).orElseThrow(()->new UsernameNotFoundException("User not found: " + email));
         return user;
     }

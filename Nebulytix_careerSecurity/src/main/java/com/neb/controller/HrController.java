@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.neb.constants.EmployeeLeaveType;
 import com.neb.dto.AddJobRequestDto;
 import com.neb.dto.EmailRequestDto;
 import com.neb.dto.EmployeeBankDetailsRequest;
@@ -40,7 +41,6 @@ import com.neb.dto.salary.SalaryResponseDto;
 import com.neb.dto.user.RegisterNewUerRequest;
 import com.neb.entity.JobApplication;
 import com.neb.entity.Payslip;
-import com.neb.repo.EmployeeLeaveType;
 import com.neb.service.AdminService;
 import com.neb.service.EmployeeBankDetailsService;
 import com.neb.service.EmployeeService;
