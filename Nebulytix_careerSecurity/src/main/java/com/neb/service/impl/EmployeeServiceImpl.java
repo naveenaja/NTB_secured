@@ -62,31 +62,22 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Autowired
     private EmployeeRepository employeeRepository;
-    
     @Autowired
     private PayslipRepository payslipRepo;
     @Autowired
 	private EmployeeLoginDetailsRepo empLoginRepo;
-
     @Autowired
     private ModelMapper mapper;
     @Autowired
 	private EmployeeLeaveRepository empLeaveRepo;
-
-	@Autowired
+    @Autowired
 	private EmployeeLeavePolicyRepo leavePolicyRepo;
-
-
-	
-	@Autowired
+    @Autowired
 	private EmployeeLeaveBalanceRepo leaveBalanceRepo;
-    
     @Autowired
     private WorkRepository workRepository;
-    
     @Autowired
     private DailyReportRepository dailyReportRepository;
-    
     @Autowired
     private UsersRepository usersRepository;
 
@@ -111,9 +102,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 		return saveEmployee.getId();
 	}
     
-
-
-	@Override
+    @Override
 	public EmployeeProfileDto getMyProfile() {
 		
 		// 1. Get logged-in user email
@@ -146,7 +135,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 		
 		
 		Employee emp = employeeRepository.findById(employeeId)
-	            .orElseThrow(() -> new CustomeException("Employee not found with id: "+employeeId));
+	                            .orElseThrow(() -> new CustomeException("Employee not found with id: "+employeeId));
 		
 		Payslip p = new Payslip();
         p.setEmployee(emp);
@@ -247,7 +236,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         workRes.setAttachmentUrl(savedWork.getAttachmentUrl());
         workRes.setEmployeeId(savedWork.getEmployee().getId());
         workRes.setEmployeeName(savedWork.getEmployee().getFirstName());
-       // workRes.setEmployeeEmail(savedWork.getEmployee().getEmail());
+      
         
         return workRes ;
     }
@@ -255,7 +244,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 	@Override
 	public String submitDailyReport(AddDailyReportRequestDto request) {
 	
-		//Employee emp = empRepo.findById(request.getEmployee_id()).orElseThrow(()->new CustomeException("employee not found with id:"+request.getEmployee_id()));
 		Employee emp = employeeRepository.findById(request.getEmployee_id())
 	            .orElseThrow(() -> new CustomeException("employee not found with id: " + request.getEmployee_id()));
 
@@ -266,20 +254,19 @@ public class EmployeeServiceImpl implements EmployeeService {
 	        
 	        Optional<DailyReport> existingOpt = dailyReportRepository.findByEmployeeIdAndReportDate(emp.getId(), date);
 		
-	        
-	         DailyReport report;
-        if (existingOpt.isPresent()) {
+	        DailyReport report;
+         if (existingOpt.isPresent()) {
             // update existing
             report = existingOpt.get();
             report.setSummary(request.getSummary());
             
-        } else {
+          } else {
             // create new
             report = new DailyReport();
             report.setEmployee(emp);
             report.setReportDate(date);
             report.setSummary(request.getSummary());
-        }
+         }
 
         DailyReport saved = dailyReportRepository.save(report);
 
@@ -586,7 +573,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 	       leave.setEndDate(wfh.getEnd());
 	       leave.setReason(wfh.getReason());
 	       leave.setTotalDays(requestedDays);
-//	       leave.setLeaveStatus(ApprovalStatus.PENDING);
 	       leave.setAppliedDate(LocalDate.now());
 	       leave.setCurrentYear(year);
 	       leave.setCurrentMonth(LocalDate.now().getMonthValue());
@@ -601,7 +587,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 	       dto.setStart(saved.getStartDate());
 	       dto.setEnd(saved.getEndDate());
 	       dto.setReason(saved.getReason());
-//	       dto.setLeaveStatus(saved.getLeaveStatus());
 	       dto.setTotalDays(requestedDays);
 
 	       return dto;

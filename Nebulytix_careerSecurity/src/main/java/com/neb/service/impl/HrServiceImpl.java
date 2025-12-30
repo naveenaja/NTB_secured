@@ -74,31 +74,22 @@ public class HrServiceImpl implements HrService {
 	private EmployeeLeaveBalanceRepo empLeaveBlnceRepo;
 	@Autowired
 	private EmployeeMontlyReportRepo employeeMonthlyReportRepo;
-
-	@Autowired
+    @Autowired
 	private EmployeeLoginDetailsRepo empLoginRepo;
-
     @Autowired
     private EmployeeSalaryRepository salRepo;
-    
     @Autowired
     private PayslipRepository payslipRepo;
-
     @Autowired
     private JobRepository jobRepository;
-
     @Autowired
     private DailyReportRepository dailyReportRepository;
-
     @Autowired
     private JobApplicationRepository jobApplicationRepository;
-
     @Autowired
     private EmailService emailService;
-
     @Autowired
     private ModelMapper mapper;
-    
     @Autowired 
     private UsersRepository usersRepository;
     @Autowired

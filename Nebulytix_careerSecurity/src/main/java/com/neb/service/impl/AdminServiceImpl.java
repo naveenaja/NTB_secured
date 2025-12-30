@@ -300,73 +300,38 @@ public class AdminServiceImpl implements AdminService{
 
 	    Employee hr = empRepo.findById(id)
 	            .orElseThrow(() -> new ResourceNotFoundException("HR not found with id: " + id));
-
-
-	    // -------- BASIC DETAILS --------
+	    
+             // -------- BASIC DETAILS --------
 	    if (updateReq.getFirstName() != null && !updateReq.getFirstName().isEmpty())
 	        hr.setFirstName(updateReq.getFirstName());
 
 	    if (updateReq.getLastName() != null && !updateReq.getLastName().isEmpty())
 	        hr.setLastName(updateReq.getLastName());
 
-//	    if (updateReq.getEmail() != null && !updateReq.getEmail().isEmpty())
-//	        hr.setEmail(updateReq.getEmail());
-
 	    if (updateReq.getMobile() != null && !updateReq.getMobile().isEmpty())
 	        hr.setMobile(updateReq.getMobile());
 
 	    if (updateReq.getCardNumber() != null && !updateReq.getCardNumber().isEmpty())
 	        hr.setCardNumber(updateReq.getCardNumber());
-
-
-	    if (updateReq.getGender() != null && !updateReq.getGender().isEmpty())
+	    
+        if (updateReq.getGender() != null && !updateReq.getGender().isEmpty())
 	        hr.setGender(updateReq.getGender());
-
-	    // -------- SALARY + LEAVES --------
+          // -------- SALARY + LEAVES --------
 	    if (updateReq.getPaidLeaves() != 0)
 	        hr.setPaidLeaves(updateReq.getPaidLeaves());
-
-	    // -------- BANK & TAX DETAILS --------
-//	    if (updateReq.getBankAccountNumber() != null && !updateReq.getBankAccountNumber().isEmpty())
-//	        hr.setBankAccountNumber(updateReq.getBankAccountNumber());
-//
-//	    if (updateReq.getIfscCode() != null && !updateReq.getIfscCode().isEmpty())
-//	        hr.setIfscCode(updateReq.getIfscCode());
-//
-//	    if (updateReq.getBankName() != null && !updateReq.getBankName().isEmpty())
-//	        hr.setBankName(updateReq.getBankName());
-//
-//	    if (updateReq.getPfNumber() != null && !updateReq.getPfNumber().isEmpty())
-//	        hr.setPfNumber(updateReq.getPfNumber());
-//
-//	    if (updateReq.getPanNumber() != null && !updateReq.getPanNumber().isEmpty())
-//	        hr.setPanNumber(updateReq.getPanNumber());
-//
-//	    if (updateReq.getUanNumber() != null && !updateReq.getUanNumber().isEmpty())
-//	        hr.setUanNumber(updateReq.getUanNumber());
-//
-//	    if (updateReq.getEpsNumber() != null && !updateReq.getEpsNumber().isEmpty())
-//	        hr.setEpsNumber(updateReq.getEpsNumber());
-//
-//	    if (updateReq.getEsiNumber() != null && !updateReq.getEsiNumber().isEmpty())
-//	        hr.setEsiNumber(updateReq.getEsiNumber());
-
-	    // -------- SAVE --------
+           // -------- SAVE --------
 	    Employee updatedHr = empRepo.save(hr);
-
-	    return mapper.map(updatedHr, EmployeeDetailsResponseDto.class);
+     return mapper.map(updatedHr, EmployeeDetailsResponseDto.class);
 	}
 
      // delete the admin based on ID
 	@Override
 	public String deleteAdmin(Long id)
 	{
-		  Users users=usersRepository.findById(id)
-				      .orElseThrow(() ->new CustomeException("Admin not found with id: " + id));
-		  
+	    Users users=usersRepository.findById(id).orElseThrow(() ->new CustomeException("Admin not found with id: " + id));
 		users.setEnabled(false);
 		usersRepository.save(users);
-		return "Admin soft deleted with id: " + users.getId();
+      return "Admin soft deleted with id: " + users.getId();
 	}
 
 	@Override
@@ -374,10 +339,10 @@ public class AdminServiceImpl implements AdminService{
 	{
 		  List<Users> admins = empRepo.findOnlyAdmin();
 		  System.out.println(admins);
-		 List<AdminProfileDto> allAdmin = admins.stream()
-			        .map(emp -> mapper.map(emp,AdminProfileDto.class))
-			        .collect(Collectors.toList());
-         System.out.println(allAdmin);
+		  List<AdminProfileDto> allAdmin = admins.stream()
+			                              .map(emp -> mapper.map(emp,AdminProfileDto.class))
+			                              .collect(Collectors.toList());
+          System.out.println(allAdmin);
 		 return allAdmin;
 	}
 	
@@ -521,10 +486,7 @@ public class AdminServiceImpl implements AdminService{
 
 	@Override
 	public ClientProfileDto updateClient(Long clientId, UpdateClientRequest req) {
-		Client client = clientRepo.findById(clientId)
-                .orElseThrow(() ->
-                        new RuntimeException("Client not found with id: " + clientId));
-
+		Client client = clientRepo.findById(clientId).orElseThrow(() ->new RuntimeException("Client not found with id: " + clientId));
         client.setCompanyName(req.getCompanyName());
         client.setContactPerson(req.getContactPerson());
         client.setContactEmail(req.getContactEmail());
@@ -536,8 +498,7 @@ public class AdminServiceImpl implements AdminService{
         client.setGstNumber(req.getGstNumber());
         client.setUpdatedDate(LocalDate.now());
         Client save = clientRepo.save(client);
-        
-        return mapper.map(save, ClientProfileDto.class);
+       return mapper.map(save, ClientProfileDto.class);
 		
 	}
 
