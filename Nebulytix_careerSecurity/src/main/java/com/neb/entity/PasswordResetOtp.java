@@ -34,6 +34,4 @@ public class PasswordResetOtp {
     @Column(nullable = false)
     private int attempts = 0;
 
-
-    // getters & setters
 }

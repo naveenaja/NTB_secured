@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 import com.neb.dto.AddDailyReportRequestDto;
+import com.neb.dto.EmployeeBankDetailsResponse;
 import com.neb.dto.EmployeeDTO;
 import com.neb.dto.EmployeeLeaveDTO;
 import com.neb.dto.GeneratePayslipRequest;
@@ -34,6 +35,7 @@ import com.neb.dto.project.ProjectsResponseDto;
 import com.neb.entity.Employee;
 import com.neb.entity.Payslip;
 import com.neb.entity.Work;
+import com.neb.service.EmployeeBankDetailsService;
 import com.neb.service.EmployeeService;
 
 //import com.neb.service.LeaveService;
@@ -47,20 +49,16 @@ public class EmployeeController {
 	@Autowired
 	private EmployeeService employeeService;
 	
-	
-	
+	@Autowired
+	private EmployeeBankDetailsService bankService;
 	
 	@Autowired
 	private ProjectService projectService;
 	
 	@GetMapping("/me")
     public ResponseEntity<ResponseMessage<EmployeeProfileDto>> getMyProfile() {
-
-        EmployeeProfileDto dto = employeeService.getMyProfile();
-
-        return ResponseEntity.ok(
-                new ResponseMessage<>(200, "SUCCESS", "Profile fetched successfully", dto)
-        );
+       EmployeeProfileDto dto = employeeService.getMyProfile();
+       return ResponseEntity.ok(new ResponseMessage<>(200, "SUCCESS", "Profile fetched successfully", dto));
     }
 	
 	@PostMapping("/payslip/generate")
@@ -79,14 +77,14 @@ public class EmployeeController {
     }
     
     
-    // Get tasks assigned to employee
+      // Get tasks assigned to employee
     @GetMapping("/tasks/{employeeId}")
     public ResponseMessage<List<Work>> getTasks(@PathVariable Long employeeId) {
         List<Work> tasks = employeeService.getTasksByEmployee(employeeId);
         return new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(), "Tasks fetched successfully", tasks);
     }
     
-   // Submit task report
+      // Submit task report
     @PutMapping("/task/submit/{taskId}")
     public ResponseEntity<ResponseMessage<WorkResponseDto>> submitTaskReport(
             @PathVariable Long taskId,
@@ -95,21 +93,14 @@ public class EmployeeController {
             @RequestParam(value = "reportAttachment", required = false) MultipartFile reportAttachment
     ) {
         WorkResponseDto updatedTask = employeeService.submitReport(taskId, status, reportDetails, reportAttachment, LocalDate.now());
-        ResponseMessage<WorkResponseDto> response = new ResponseMessage<>(
-                HttpStatus.OK.value(),
-                HttpStatus.OK.name(),
-                "Report submitted successfully",
-                updatedTask
-        );
+        ResponseMessage<WorkResponseDto> response = new ResponseMessage<>(HttpStatus.OK.value(),HttpStatus.OK.name(),"Report submitted successfully",updatedTask);
         return ResponseEntity.ok(response);
     }
     
     @PostMapping("/dailyReport/submit")
    public ResponseEntity<ResponseMessage<String>> submitDailyReport(@RequestBody AddDailyReportRequestDto reportDetails){
-	  
-    	String submitDailyReportResponse = employeeService.submitDailyReport(reportDetails);
-    	
-    	return ResponseEntity.ok(new ResponseMessage<String>(HttpStatus.OK.value(), HttpStatus.OK.name(), "daily report result", submitDailyReportResponse));
+	  String submitDailyReportResponse = employeeService.submitDailyReport(reportDetails);
+      return ResponseEntity.ok(new ResponseMessage<String>(HttpStatus.OK.value(), HttpStatus.OK.name(), "daily report result", submitDailyReportResponse));
    }
     
     @PutMapping("/{id}/profile-picture")
@@ -118,35 +109,19 @@ public class EmployeeController {
             @RequestParam("profileImage") MultipartFile profileImage) {
 
         String imageUrl = employeeService.uploadProfilePicture(id, profileImage);
-        return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(),
-                "Profile picture uploaded successfully", imageUrl));
+        return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(),"Profile picture uploaded successfully", imageUrl));
     }
     @DeleteMapping("/{id}/profile-picture")
     public ResponseEntity<ResponseMessage<String>> deleteProfilePicture(@PathVariable Long id) {
-
         boolean deleted = employeeService.deleteProfilePicture(id);
-
         if (deleted) {
-            return ResponseEntity.ok(
-                    new ResponseMessage<>(
-                            HttpStatus.OK.value(),
-                            HttpStatus.OK.name(),
-                            "Profile picture deleted successfully",
-                            "Profile image removed from database and folder"
-                    )
-            );
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ResponseMessage<>(
-                            HttpStatus.NOT_FOUND.value(),
-                            HttpStatus.NOT_FOUND.name(),
-                            "Profile picture not found",
-                            null
-                    ));
+          return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(),HttpStatus.OK.name(),"Profile picture deleted successfully","Profile image removed from database and folder"));
+        } 
+        else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseMessage<>(HttpStatus.NOT_FOUND.value(),HttpStatus.NOT_FOUND.name(),"Profile picture not found",null));
         }
     }
 
-   
     @GetMapping("/{employeeId}/active-projects")
     public ResponseEntity<ResponseMessage<ProjectsResponseDto>> getActiveProjects(@PathVariable Long employeeId) {
     	ProjectsResponseDto project = projectService.getActiveProjectsByEmployee(employeeId);
@@ -160,53 +135,42 @@ public class EmployeeController {
     }
    
     @GetMapping("/webclockin/{employeeId}")
-    public ResponseEntity<ResponseDTO<EmployeeDTO>> employeeLogin(
-            @PathVariable Long employeeId) { // 🔴 MODIFIED
+    public ResponseEntity<ResponseDTO<EmployeeDTO>> employeeLogin(@PathVariable Long employeeId) { //  MODIFIED
 
         EmployeeDTO empDto = employeeService.login(employeeId);
-
-        ResponseDTO<EmployeeDTO> response =
-                new ResponseDTO<>(empDto, "Employee Login Successful", LocalDateTime.now());
-
+        ResponseDTO<EmployeeDTO> response =new ResponseDTO<>(empDto, "Employee Login Successful", LocalDateTime.now());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/webclockout/{employeeId}")
-    public ResponseEntity<ResponseDTO<EmployeeDTO>> employeeLogout(
-            @PathVariable Long employeeId) { // 🔴 MODIFIED
+    public ResponseEntity<ResponseDTO<EmployeeDTO>> employeeLogout(@PathVariable Long employeeId) { //  MODIFIED
 
-        EmployeeDTO empDto = employeeService.logout(employeeId);
-
-        ResponseDTO<EmployeeDTO> response =
-                new ResponseDTO<>(empDto, "Employee logged out successfully", LocalDateTime.now());
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
+         EmployeeDTO empDto = employeeService.logout(employeeId);
+         ResponseDTO<EmployeeDTO> response = new ResponseDTO<>(empDto, "Employee logged out successfully", LocalDateTime.now());
+         return new ResponseEntity<>(response, HttpStatus.OK);
     }
     
     @PostMapping("/apply-leave")
-    public ResponseEntity<ResponseDTO<EmployeeLeaveDTO>> applyLeave(
-            @RequestBody EmployeeLeaveDTO empLeaveDto) {
+    public ResponseEntity<ResponseDTO<EmployeeLeaveDTO>> applyLeave(@RequestBody EmployeeLeaveDTO empLeaveDto) {
 
         EmployeeLeaveDTO applyLeave = employeeService.applyLeave(empLeaveDto);
           System.out.println("===> "+applyLeave);
-        ResponseDTO<EmployeeLeaveDTO> response = 
-                new ResponseDTO<>(applyLeave, "Leave Applied Successfully", LocalDateTime.now());
-
+        ResponseDTO<EmployeeLeaveDTO> response = new ResponseDTO<>(applyLeave, "Leave Applied Successfully", LocalDateTime.now());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("/apply-wfh")
-    public ResponseEntity<ResponseDTO<EmployeeLeaveDTO>> applyWFH(
-            @RequestBody EmployeeLeaveDTO wfhDto) {
+    public ResponseEntity<ResponseDTO<EmployeeLeaveDTO>> applyWFH(@RequestBody EmployeeLeaveDTO wfhDto) {
 
         EmployeeLeaveDTO applyWFH = employeeService.applyWFH(wfhDto);
-
-        ResponseDTO<EmployeeLeaveDTO> response =
-                new ResponseDTO<>(applyWFH, "Work From Home Applied Successfully", LocalDateTime.now());
-
+        ResponseDTO<EmployeeLeaveDTO> response = new ResponseDTO<>(applyWFH, "Work From Home Applied Successfully", LocalDateTime.now());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-
+    @GetMapping("get/{id}/bank-detail")
+    public ResponseEntity<ResponseMessage<EmployeeBankDetailsResponse>> getBankDetails(@PathVariable Long id) {
+        EmployeeBankDetailsResponse response = bankService.getBankDetailsByEmployeeId(id);
+        return ResponseEntity.ok(new ResponseMessage<>(200, "OK","Bank details fetched successfully", response));
+    }
   
 }

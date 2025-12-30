@@ -23,7 +23,7 @@ import com.neb.entity.Employee;
 import com.neb.entity.Project;
 import com.neb.service.ClientService;
 
-//@PreAuthorize("hasRole('CLIENT')")
+
 @RestController
 @RequestMapping("/api/client")
 public class ClientController {
@@ -46,9 +46,7 @@ public class ClientController {
     @GetMapping("/projects")
     public ResponseEntity<ResponseMessage<List<Project>>> getProjectsForClient() {
         List<Project> projects = clientService.getProjectsForLoggedInClient();
-        return ResponseEntity.ok(
-                new ResponseMessage<>(200, "SUCCESS", "Client projects fetched successfully", projects)
-        );
+        return ResponseEntity.ok(new ResponseMessage<>(200, "SUCCESS", "Client projects fetched successfully", projects));
     }
 
     //  Get status of a specific project
@@ -56,9 +54,7 @@ public class ClientController {
     @GetMapping("/projects/{projectId}/status")
     public ResponseEntity<ResponseMessage<String>> getProjectStatus(@PathVariable Long projectId) {
         String status = clientService.getProjectStatus(projectId);
-        return ResponseEntity.ok(
-                new ResponseMessage<>(200, "SUCCESS", "Project status fetched successfully", status)
-        );
+        return ResponseEntity.ok(new ResponseMessage<>(200, "SUCCESS", "Project status fetched successfully", status));
     }
 
     //  Get employees working under a specific project
@@ -66,9 +62,7 @@ public class ClientController {
     @GetMapping("/projects/{projectId}/employees")
     public ResponseEntity<ResponseMessage<List<EmployeeResponseDto>>> getEmployeesByProject(@PathVariable Long projectId) {
         List<EmployeeResponseDto> employees = clientService.getEmployeesByProject(projectId);
-        return ResponseEntity.ok(
-                new ResponseMessage<>(200, "SUCCESS", "Employees for project fetched successfully", employees)
-        );
+        return ResponseEntity.ok(new ResponseMessage<>(200, "SUCCESS", "Employees for project fetched successfully", employees));
     }
 
     //  Assign work/task to an employee under a project
@@ -78,9 +72,7 @@ public class ClientController {
             @PathVariable Long projectId,
             @RequestBody AddWorkRequestDto dto) {
         WorkResponseDto work = clientService.assignWorkToEmployee(projectId, dto);
-        return ResponseEntity.ok(
-                new ResponseMessage<>(200, "SUCCESS", "Work assigned successfully", work)
-        );
+        return ResponseEntity.ok(new ResponseMessage<>(200, "SUCCESS", "Work assigned successfully", work));
     }
 
     //  Get all work/tasks under a project
@@ -88,23 +80,13 @@ public class ClientController {
     @GetMapping("/projects/{projectId}/tasks")
     public ResponseEntity<ResponseMessage<List<WorkResponseDto>>> getWorkByProject(@PathVariable Long projectId) {
         List<WorkResponseDto> works = clientService.getWorkByProject(projectId);
-        return ResponseEntity.ok(
-                new ResponseMessage<>(200, "SUCCESS", "Project work fetched successfully", works)
-        );
+        return ResponseEntity.ok(new ResponseMessage<>(200, "SUCCESS", "Project work fetched successfully", works));
     }
     @PreAuthorize("hasRole('CLIENT')")
     @GetMapping("/projects/{projectId}/reports")
     public ResponseEntity<ResponseMessage<List<DailyReport>>> getProjectReports(@PathVariable Long projectId) {
 
         List<DailyReport> reports = clientService.getReportsByProject(projectId);
-
-        return ResponseEntity.ok(
-                new ResponseMessage<>(
-                        200,
-                        "SUCCESS",
-                        "Project daily reports fetched successfully",
-                        reports
-                )
-        );
-}
+        return ResponseEntity.ok(new ResponseMessage<>(200,"SUCCESS","Project daily reports fetched successfully",reports));
+    }
 }

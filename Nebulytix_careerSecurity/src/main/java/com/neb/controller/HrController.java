@@ -20,8 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
-import com.neb.constants.Role;
+import com.neb.constants.EmployeeLeaveType;
 import com.neb.dto.AddJobRequestDto;
 import com.neb.dto.EmailRequestDto;
 import com.neb.dto.EmployeeBankDetailsRequest;
@@ -34,27 +33,18 @@ import com.neb.dto.JobDetailsDto;
 import com.neb.dto.PayslipDto;
 import com.neb.dto.ResponseDTO;
 import com.neb.dto.ResponseMessage;
-
-
 import com.neb.dto.employee.EmployeeProfileDto;
 import com.neb.dto.employee.UpdateEmployeeRequestDto;
 import com.neb.dto.employee.UpdateEmployeeResponseDto;
 import com.neb.dto.salary.SalaryRequestDto;
 import com.neb.dto.salary.SalaryResponseDto;
 import com.neb.dto.user.RegisterNewUerRequest;
-import com.neb.dto.user.UserDto;
-
-import com.neb.entity.EmployeeBankDetails;
-import com.neb.entity.JobApplication;
-
 import com.neb.entity.JobApplication;
 import com.neb.entity.Payslip;
-import com.neb.repo.EmployeeLeaveType;
 import com.neb.service.AdminService;
-
+import com.neb.service.EmployeeBankDetailsService;
 import com.neb.service.EmployeeService;
 import com.neb.service.HrService;
-
 import com.neb.service.UsersService;
 import com.neb.util.ApprovalStatus;
 
@@ -76,25 +66,20 @@ public class HrController {
     @Autowired
     private AdminService adminService;
     
+    @Autowired
+    private EmployeeBankDetailsService bankService;
+    
     
     @GetMapping("/me")
     public ResponseEntity<ResponseMessage<EmployeeProfileDto>> getMyProfile() {
-
         EmployeeProfileDto dto = employeeService.getMyProfile();
-
-        return ResponseEntity.ok(
-                new ResponseMessage<>(200, "SUCCESS", "HR profile fetched successfully", dto)
-        );
+        return ResponseEntity.ok(new ResponseMessage<>(200, "SUCCESS", "HR profile fetched successfully", dto));
     }
     
     @PostMapping("/create-employee")
     public ResponseEntity<ResponseMessage> createEmployee(@RequestBody RegisterNewUerRequest req) {
-
         adminService.createEmployee(req);
-
-        return ResponseEntity.ok(
-            new ResponseMessage(200, "OK", "User created successfully")
-        );
+        return ResponseEntity.ok(new ResponseMessage(200, "OK", "User created successfully"));
     }
     
     
@@ -215,8 +200,6 @@ public class HrController {
         return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Report URL fetched", fullUrl));
     }
 
-    // ============================ NEW / UPDATED ENDPOINTS ============================
-
     // Update applicant status
     @PutMapping("/job/updateStatus/{applicationId}/{status}")
     public ResponseEntity<ResponseMessage<String>> updateJobStatus(@PathVariable Long applicationId, @PathVariable Boolean status) {
@@ -224,7 +207,8 @@ public class HrController {
         String msg = status ? "Applicant Shortlisted" : "Applicant Rejected";
         return ResponseEntity.ok(new ResponseMessage<>(200, "OK", msg, null));
     }
-
+    
+   //========================= Emails ===========================
        // Send email to all shortlisted applicants
     @PostMapping("/job/sendShortlistedEmails")
     public ResponseEntity<ResponseMessage<List<JobApplication>>> sendShortlistedEmails(@RequestBody EmailRequestDto emailRequest) {
@@ -233,8 +217,7 @@ public class HrController {
             new ResponseMessage<>(200, "OK", "Emails sent to all shortlisted applicants and status updated", updatedApplicants)
         );
     }
-  
-    //========================= emails ===========================
+
     // Send email to all rejected applicants
     @PostMapping("/job/sendRejectedEmails")
     public ResponseEntity<ResponseMessage<List<JobApplication>>> sendRejectedEmails(@RequestBody EmailRequestDto emailRequest) {
@@ -275,68 +258,49 @@ public class HrController {
     public ResponseEntity<ResponseMessage<String>> logout() {
         return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(), "Logout successful", "Admin logged out successfully"));
     }
-    @PutMapping("/employee/{id}/bank-details")
-    public ResponseEntity<ResponseMessage<EmployeeBankDetailsResponse>> updateBankDetails(
-            @PathVariable Long id,
-            @RequestBody EmployeeBankDetailsRequest request) {
-
-        EmployeeBankDetailsResponse response =
-                service.addOrUpdateBankDetails(id, request);
-
-        return ResponseEntity.ok(
-                new ResponseMessage<>(200, "OK",
-                        "Bank details added/updated successfully", response)
-        );
+    //    ========================== Bank Details ============================
+    @PostMapping("add/bank-details/{id}")
+    public ResponseEntity<ResponseMessage<EmployeeBankDetailsResponse>> addBankDetails(@PathVariable Long id,@RequestBody EmployeeBankDetailsRequest request) {
+        EmployeeBankDetailsResponse response = bankService.addBankDetails(id, request);
+        return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Bank details added successfully", response));
     }
-
-
+    @PutMapping("/update/{id}/bank-details")
+    public ResponseEntity<ResponseMessage<EmployeeBankDetailsResponse>> updateBankDetails(@PathVariable Long id,@RequestBody EmployeeBankDetailsRequest request) {
+        EmployeeBankDetailsResponse response = bankService.UpdateBankDetails(id, request);
+        return ResponseEntity.ok(new ResponseMessage<>(200, "OK","Bank details updated successfully", response));
+    }
+    //   ======================== leave ========================================
     @GetMapping("/pendingleaves/{status}")//APPROVED PENDING REJECTED
 	public ResponseEntity<ResponseDTO<List<EmployeeLeaveDTO>>> filterLeaves(@PathVariable ApprovalStatus status){
 		List<EmployeeLeaveDTO> pendingLeaves = service.leaves(status);
-		
 		ResponseDTO<List<EmployeeLeaveDTO>> responseDto = new ResponseDTO<List<EmployeeLeaveDTO>>("Pending Leaves Retrieved Successfully",pendingLeaves);
-		
 		return new ResponseEntity<ResponseDTO<List<EmployeeLeaveDTO>>>(responseDto,HttpStatus.OK);
 		
 	}
 	
-	
-
 	@PostMapping("/approval/{leaveId}/{status}")
 	public ResponseEntity<ResponseDTO<String>> approvalOrRejectLeaves(@PathVariable Long leaveId,EmployeeLeaveType type,@PathVariable ApprovalStatus status){
 		EmployeeLeaveDTO approvalOrReject = service.approvalOrReject(leaveId,status);
 		ResponseDTO<String> approvalStatusRes = new ResponseDTO<>(approvalOrReject.getLeaveStatus().toString(),"Updated Sucessfully");
-		
 		return new ResponseEntity<ResponseDTO<String>>(approvalStatusRes,HttpStatus.OK);
 	}
 
-	
 	@PostMapping("/report/monthly/attendencereport")
 	public ResponseEntity<ResponseDTO<List<EmployeeMonthlyReportDTO>>> getMonthlyReport() {
-
-	   
-	            List<EmployeeMonthlyReportDTO> generatedMontlyReport = service.generateMontlyReport();
-
-	    return ResponseEntity.ok(
-	            new ResponseDTO<>("Monthly report generated Successfully", generatedMontlyReport)
-	    );
+        List<EmployeeMonthlyReportDTO> generatedMontlyReport = service.generateMontlyReport();
+        return ResponseEntity.ok(new ResponseDTO<>("Monthly report generated Successfully", generatedMontlyReport));
 	}
 	
 	@GetMapping("/leaves/today")
 	public ResponseEntity<ResponseDTO<List<EmployeeLeaveDTO>>> employeeOnLeavesToday() {
-
-	    List<EmployeeLeaveDTO> leaves = service.employeeOnLeave();
-
-	    ResponseDTO<List<EmployeeLeaveDTO>> response =
-	            new ResponseDTO<>("Employees on leave today Fetched Succesfully", leaves);
-
-	    return ResponseEntity.ok(response);
+         List<EmployeeLeaveDTO> leaves = service.employeeOnLeave();
+         ResponseDTO<List<EmployeeLeaveDTO>> response = new ResponseDTO<>("Employees on leave today Fetched Succesfully", leaves);
+         return ResponseEntity.ok(response);
 	}
 	
 	@GetMapping("/employeereportfor/{id}/{year}/{month}")
 	public ResponseEntity<ResponseDTO<EmployeeMonthlyReportDTO>> empReportOfYearAndMonth(@PathVariable Long id,@PathVariable Integer year,@PathVariable Integer month){
 		EmployeeMonthlyReportDTO monthlyReportOfEmployee = service.getMonthlyReportOfEmployee(id, year, month);
-		
 		ResponseDTO<EmployeeMonthlyReportDTO> reportRes = new ResponseDTO<EmployeeMonthlyReportDTO>("Monthly Report Fetched Succesfully for Year"+year+" and month "+Month.of(month),monthlyReportOfEmployee);
 		return new ResponseEntity<ResponseDTO<EmployeeMonthlyReportDTO>>(reportRes,HttpStatus.OK);
 	}

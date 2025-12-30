@@ -63,11 +63,6 @@ public class PayslipScheduler {
                 employeeService.generatePayslip(emp.getId(), monthYear);
                 System.out.println("✅ Payslip generated for: " + emp.getFirstName() + " (" + monthYear + ")");
             } catch (Exception e) {
-                // ❌ Old Code (Removed):
-                // System.err.println("❌ Error generating payslip for employee ID " + emp.getId());
-                // e.printStackTrace();
-
-                // ✅ New Code: Throw custom exception so GlobalExceptionHandler can handle it
                 throw new PayslipGenerationException(
                         "Failed to generate payslip for employee ID: " + emp.getId(), e);
             }

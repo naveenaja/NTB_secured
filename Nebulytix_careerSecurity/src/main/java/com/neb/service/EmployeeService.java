@@ -20,36 +20,19 @@ public interface EmployeeService {
 	public EmployeeProfileDto getMyProfile();
     // Generate payslip for a specific employee and month
     public Payslip generatePayslip(Long employeeId, String monthYear) throws Exception;
-    
     // Get employee details by ID
     public Employee getEmployeeById(Long id);
-
-    // Get all tasks assigned to an employee
+     // Get all tasks assigned to an employee
     public List<Work> getTasksByEmployee(Long employeeId);
-
-    // Submit task report after completion
+     // Submit task report after completion
     public WorkResponseDto submitReport(Long taskId, String status, String reportDetails, MultipartFile reportAttachment, LocalDate submittedDate);
-
-    // Get employee details by email
-    //public EmployeeDetailsResponseDto getEmployeeByEmail(String email);
-    
     public String submitDailyReport(AddDailyReportRequestDto request);
-    
     public String uploadProfilePicture(Long employeeId, MultipartFile file);
-    
-    boolean deleteProfilePicture(Long employeeId);
+    public boolean deleteProfilePicture(Long employeeId);
 	public UpdateEmployeeResponseDto updateEmployee(Long employeeId, UpdateEmployeeRequestDto requestDto);
-    
-    EmployeeDTO login(Long employeeId);
-
-
-    EmployeeDTO logout(Long employeeId);
-    
-//    public String applyLeave(EmployeeLeaveDTO empLeaveDto);
+    public EmployeeDTO login(Long employeeId);
+    public EmployeeDTO logout(Long employeeId);
     public EmployeeLeaveDTO applyLeave(EmployeeLeaveDTO empLeaveDto);
     public EmployeeLeaveDTO applyWFH(EmployeeLeaveDTO wfh);
-   
-    
-    
 
 }

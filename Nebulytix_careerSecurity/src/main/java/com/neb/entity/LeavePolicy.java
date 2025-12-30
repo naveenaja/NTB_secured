@@ -1,6 +1,6 @@
 package com.neb.entity;
 
-import com.neb.repo.EmployeeLeaveType;
+import com.neb.constants.EmployeeLeaveType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -12,18 +12,13 @@ import com.neb.entity.Project;
 import com.neb.entity.Users;
 
 public interface ClientService {
-
-	public ClientProfileDto getMyProfile();
-	public Long createClient(AddClientRequest addClientReq, Users user);
 	
-	 List<Project> getProjectsForLoggedInClient();
-
-	    String getProjectStatus(Long projectId);
-
-	    List<EmployeeResponseDto> getEmployeesByProject(Long projectId);
-
-	    WorkResponseDto assignWorkToEmployee(Long projectId, AddWorkRequestDto dto);
-
-	    List<WorkResponseDto> getWorkByProject(Long projectId);
-	    public List<DailyReport> getReportsByProject(Long projectId);
+    public ClientProfileDto getMyProfile();
+	public Long createClient(AddClientRequest addClientReq, Users user);
+    public List<Project> getProjectsForLoggedInClient();
+    public String getProjectStatus(Long projectId);
+    public List<EmployeeResponseDto> getEmployeesByProject(Long projectId);
+    public WorkResponseDto assignWorkToEmployee(Long projectId, AddWorkRequestDto dto);
+    public List<WorkResponseDto> getWorkByProject(Long projectId);
+	public List<DailyReport> getReportsByProject(Long projectId);
 }

@@ -28,21 +28,14 @@ public class EmployeeMonthlyReportDTO {
 	}
 	private Long employeeId;
     private String employeeName;
-   
     private Integer currentYear;
     private Integer currentMonth;
-
-    // Attendance
+     // Attendance
     private Long totalWorkingDays;
     private Double presentDays;
     private Long absentDays;
-   // private Long lateArrivals;
-   // private Long totalWorkHours;
-
-    // Leave summary
+     // Leave summary
     private Long leavesApplied;
-   // private Long leavesApproved;
-   // private Long leavesRejected;
     private Long wfhDays;
 }
 

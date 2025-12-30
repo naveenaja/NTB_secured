@@ -1,4 +1,4 @@
-package com.neb.repo;
+package com.neb.constants;
 
 public enum EmployeeLeaveType {
 	

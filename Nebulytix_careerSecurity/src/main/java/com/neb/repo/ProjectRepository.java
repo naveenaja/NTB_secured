@@ -10,17 +10,17 @@ import com.neb.entity.Project;
 
 public interface ProjectRepository extends JpaRepository<Project, Long> {
 
-//    // Get project list of that client
+    // Get project list of that client
 	List<Project> findByClient_Id(Long clientId);
     
 	@Query("SELECT p FROM Project p WHERE p.client.id = :clientId")
-	List<Project> findProjectsByClientId(@Param("clientId") Long clientId);
-	 List<Project> findByClientId(Long clientId);
-	      @Query("""
-		        SELECT p 
-		        FROM Project p
-		        JOIN p.employees e
-		        WHERE e.id = :employeeId
+	public List<Project> findProjectsByClientId(@Param("clientId") Long clientId);
+	public  List<Project> findByClientId(Long clientId);
+    @Query("""
+		    SELECT p 
+		    FROM Project p
+		    JOIN p.employees e
+		    WHERE e.id = :employeeId
 		    """)
-	  List<Project> findProjectsByEmployeeId(@Param("employeeId") Long employeeId);
+	public List<Project> findProjectsByEmployeeId(@Param("employeeId") Long employeeId);
 }

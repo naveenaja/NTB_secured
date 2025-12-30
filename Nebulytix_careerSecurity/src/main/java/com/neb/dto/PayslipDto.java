@@ -78,12 +78,6 @@ public class PayslipDto {
             dto.setEmployeeId(emp.getId());
             dto.setEmployeeFirstName(emp.getFirstName());
             dto.setEmployeeLastName(emp.getLastName());
- //           dto.setEmployeeEmail(emp.getEmail());
-//            dto.setEmployeeBankAccountNumber(emp.getBankAccountNumber());
-//            dto.setEmployeeBankName(emp.getBankName());
-//            dto.setEmployeePfNumber(emp.getPfNumber());
-//            dto.setEmployeePanNumber(emp.getPanNumber());
-//            dto.setEmployeeUanNumber(emp.getUanNumber());
         }
 
         return dto;

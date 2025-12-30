@@ -9,8 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.neb.entity.EmployeeSalary;
 
 public interface EmployeeSalaryRepository extends JpaRepository<EmployeeSalary, Long> {
-
-    Optional<EmployeeSalary> findByEmployeeIdAndActiveTrue(Long employeeId);
-
-	List<EmployeeSalary> findByActiveTrue();
+    public Optional<EmployeeSalary> findByEmployeeIdAndActiveTrue(Long employeeId);
+    public List<EmployeeSalary> findByActiveTrue();
 }

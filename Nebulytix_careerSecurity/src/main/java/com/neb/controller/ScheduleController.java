@@ -48,12 +48,6 @@ public class ScheduleController {
         schedule.setEndTime(dto.getEndTime());
         schedule.setLocation(dto.getLocation());
         schedule.setStatus(dto.getStatus());
-
-//        // Link the Admin/HR who created this schedule
-//        AdminAndHr admin = new AdminAndHr();
-//        admin.setId(dto.getCreatedById());
-//        schedule.setCreatedBy(admin);
-
         // Link the Employee for whom the schedule is created
         Employee employee = new Employee();
         employee.setId(dto.getEmployeeId());
@@ -101,13 +95,9 @@ public class ScheduleController {
         dto.setEndTime(schedule.getEndTime());
         dto.setLocation(schedule.getLocation());
         dto.setStatus(schedule.getStatus());
-
-   
-
         if (schedule.getEmployee() != null) {
             dto.setEmployeeId(schedule.getEmployee().getId());
         }
-
-        return dto;
+       return dto;
     }
 }

@@ -6,8 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.neb.entity.EmployeeBankDetails;
 
-public interface EmployeeBankDetailsRepository
-        extends JpaRepository<EmployeeBankDetails, Long> {
-
-    Optional<EmployeeBankDetails> findByEmployeeId(Long employeeId);
+public interface EmployeeBankDetailsRepository extends JpaRepository<EmployeeBankDetails, Long> {
+       Optional<EmployeeBankDetails> findByEmployeeId(Long employeeId);
 }
