@@ -124,13 +124,9 @@ public class ProjectServiceImpl implements ProjectService {
     public List<ProjectResponseDto> getProjectsByClient(Long clientId) {
         List<Project> projects = projectRepository.findByClientId(clientId);
 
-        if (projects.isEmpty()) {
-            throw new CustomeException("No projects found for client with ID: " + clientId);
-        }
+        if (projects.isEmpty()) { throw new CustomeException("No projects found for client with ID: " + clientId);}
 
-        return projects.stream()
-                .map(ProjectResponseDto::fromEntity)
-                .toList();
+        return projects.stream().map(ProjectResponseDto::fromEntity).toList();
     }
 
     @Override
@@ -168,11 +164,9 @@ public class ProjectServiceImpl implements ProjectService {
 
         return projectRepository.save(project);
     }
-
-    /**
-     * ✅ Store file inside projects/ directory
-     */
-    private String storeFile(MultipartFile file) {
+    
+   //  Store file inside projects/ directory
+   private String storeFile(MultipartFile file) {
         try {
             if (file == null || file.isEmpty()) {
                 throw new FileStorageException("Cannot store empty file");
@@ -217,9 +211,7 @@ public class ProjectServiceImpl implements ProjectService {
 	        employee.setProject(project);
 
 	        Project savedProject = projectRepository.save(project); // owning side
-
-	        
-	   return mapper.map(savedProject, ProjectResponseDto.class);
+       return mapper.map(savedProject, ProjectResponseDto.class);
        
 	}
 
@@ -243,8 +235,6 @@ public class ProjectServiceImpl implements ProjectService {
 
 	        // Save owning side
 	        projectRepository.save(project);
-	   
-		
 	}
 
 	@Override
@@ -256,9 +246,6 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	public List<ProjectsResponseDto> getProjectsByEmployeeId(Long employeeId) {
 		 List<Project> projects = projectRepository.findProjectsByEmployeeId(employeeId);
-		 
-		 return projects.stream()
-		            .map(project -> mapper.map(project, ProjectsResponseDto.class))
-		            .toList();
+		 return projects.stream().map(project -> mapper.map(project, ProjectsResponseDto.class)).toList();
 	}
 }

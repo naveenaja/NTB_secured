@@ -49,36 +49,26 @@ public class CareerPageServiceImpl implements CareerPageService {
     
     @Override
     public JobDetailsDto getJobById(Long id) {
-        Job job = jobRepository.findById(id)
-                .orElseThrow(() -> new CustomeException("Job not found with id: " + id));
-
+    	
+        Job job = jobRepository.findById(id).orElseThrow(() -> new CustomeException("Job not found with id: " + id));
+        
         LocalDate today = LocalDate.now();
         job.setIsActive(job.getClosingDate() == null || !job.getClosingDate().isBefore(today));
-
+        
         return mapper.map(job, JobDetailsDto.class);
     }
 
 	@Override
 	public AddJobApplicationResponseDto applyForJob(AddJobApplicationRequestDto requestDto, MultipartFile resume) {
 		
-		 if (requestDto == null) {
-	            throw new CustomeException("Request data is missing");
-	        }
-
-	        if (resume == null || resume.isEmpty()) {
-	            throw new CustomeException("Resume file is required");
-	        }
+		 if (requestDto == null){ throw new CustomeException("Request data is missing");}
+	     if (resume == null || resume.isEmpty()) { throw new CustomeException("Resume file is required");}
 	        
-		 Job job = jobRepository.findById(requestDto.getJobId())
-	                .orElseThrow(() -> new CustomeException("Job not found with ID: " + requestDto.getJobId()));
-
-	        // Check if user already applied (same email or same domain)
-	        boolean exists = jobApplicationRepository.findAll().stream()
-	                .anyMatch(app -> app.getEmail().equalsIgnoreCase(requestDto.getEmail()));
-
-	        if (exists) {
-	            throw new CustomeException("You already applied for a job with this email!");
-	        }
+		 Job job = jobRepository.findById(requestDto.getJobId()).orElseThrow(() -> new CustomeException("Job not found with ID: " + requestDto.getJobId()));
+             // Check if user already applied (same email or same domain)
+	     boolean exists = jobApplicationRepository.findAll().stream()
+	                                              .anyMatch(app -> app.getEmail().equalsIgnoreCase(requestDto.getEmail()));
+        if (exists){ throw new CustomeException("You already applied for a job with this email!"); }
 	        
 	        JobApplication application = new JobApplication();
 	        application.setEmail(requestDto.getEmail());
@@ -125,8 +115,7 @@ public class CareerPageServiceImpl implements CareerPageService {
 	@Override
 	public List<JobApplicationDto> getApplicationsByJobId(Long jobId){
 
-	    Job job = jobRepository.findById(jobId)
-	            .orElseThrow(() -> new CustomeException("Job not found with ID: " + jobId));
+	    Job job = jobRepository.findById(jobId).orElseThrow(() -> new CustomeException("Job not found with ID: " + jobId));
 
 	    List<JobApplication> apps = job.getApplications();
 	    

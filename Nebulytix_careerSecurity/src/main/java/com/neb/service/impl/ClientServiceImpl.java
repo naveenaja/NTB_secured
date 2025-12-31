@@ -37,20 +37,17 @@ public class ClientServiceImpl implements ClientService{
 
 	@Autowired
 	private UsersRepository usersRepository;
-	
 	@Autowired
 	private ClientRepository clientRepository;
-	
-	@Autowired
+    @Autowired
 	private ModelMapper mapper;
 	@Autowired	
- private EmployeeRepository employeeRepo;
+    private EmployeeRepository employeeRepo;
 	@Autowired
 	private  ProjectRepository projectRepo;
 	@Autowired
 	private DailyReportRepository dailyReportRepository;
-	
-	@Autowired
+    @Autowired
 	private WorkRepository workRepo;
 	
 	
@@ -60,18 +57,14 @@ public class ClientServiceImpl implements ClientService{
         String email = AuthUtils.getCurrentUserEmail();
         if (email == null) throw new RuntimeException("User not authenticated");
 
-        Users user = usersRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Users user = usersRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
-        Client client = clientRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new RuntimeException("Client profile not found"));
-
+        Client client = clientRepository.findByUserId(user.getId()).orElseThrow(() -> new RuntimeException("Client profile not found"));
         ClientProfileDto clientProfileDto = mapper.map(client, ClientProfileDto.class);
-        return clientProfileDto;
+      return clientProfileDto;
     }
 
-
-	@Override
+     @Override
 	public Long createClient(AddClientRequest addClientReq, Users user) {
 		
 		Client client = mapper.map(addClientReq, Client.class);
@@ -83,13 +76,10 @@ public class ClientServiceImpl implements ClientService{
 	  // Helper: Get logged-in client
     private Users getLoggedInClient() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return usersRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Client not found with email: " + email));
+        return usersRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Client not found with email: " + email));
     }
 
-  
-
-    @Override
+      @Override
     public List<Project> getProjectsForLoggedInClient() {
         Users client = getLoggedInClient();
         return projectRepo.findByClient_Id(client.getId());
