@@ -467,10 +467,12 @@ public class AdminServiceImpl implements AdminService{
 			            dto.setSalary(emp.getSalary());
 			            dto.setProfilePictureUrl(emp.getProfilePictureUrl());
 			            dto.setMobile(emp.getMobile());
-
+                        dto.setEmpStatus(emp.getEmpStatus());
+                       
 			            // From User entity
 			            if (emp.getUser() != null) {
 			                dto.setEmail(emp.getUser().getEmail());
+			                dto.setUserEnabled(emp.getUser().isEnabled());
 			            }
 
 			            return dto;
@@ -495,10 +497,11 @@ public class AdminServiceImpl implements AdminService{
 			            dto.setSalary(emp.getSalary());
 			            dto.setProfilePictureUrl(emp.getProfilePictureUrl());
 			            dto.setMobile(emp.getMobile());
-
+			            dto.setEmpStatus(emp.getEmpStatus());
 			            // From User entity
 			            if (emp.getUser() != null) {
 			                dto.setEmail(emp.getUser().getEmail());
+			                dto.setUserEnabled(emp.getUser().isEnabled());
 			            }
 
 			            return dto;
@@ -523,13 +526,14 @@ public class AdminServiceImpl implements AdminService{
 		            dto.setJoiningDate(emp.getJoiningDate());
 		            dto.setSalary(emp.getSalary());
 		            dto.setProfilePictureUrl(emp.getProfilePictureUrl());
-
+		            dto.setEmpStatus(emp.getEmpStatus());
 		            // If mobile is in Employee
 		            dto.setMobile(emp.getMobile());
 
 		            // From User entity
 		            if (emp.getUser() != null) {
 		                dto.setEmail(emp.getUser().getEmail());
+		                dto.setUserEnabled(emp.getUser().isEnabled());
 		            }
 
 		            return dto;
@@ -556,7 +560,8 @@ public class AdminServiceImpl implements AdminService{
 	            dto.setWebsite(client.getWebsite());
 	            dto.setIndustryType(client.getIndustryType());
 	            dto.setGstNumber(client.getGstNumber());
-
+                dto.setEmpStatus(client.getStatus());
+                dto.setUserEnabled(client.getUser().isEnabled());
 	            return dto;
 	        })
 	        .collect(Collectors.toList());
