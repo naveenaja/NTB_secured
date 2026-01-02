@@ -583,9 +583,6 @@ public class AdminServiceImpl implements AdminService{
         client.setUpdatedDate(LocalDate.now());
         Client save = clientRepo.save(client);
        return mapper.map(save, ClientProfileDto.class);
-		
 	}
 
-	
-	
 }

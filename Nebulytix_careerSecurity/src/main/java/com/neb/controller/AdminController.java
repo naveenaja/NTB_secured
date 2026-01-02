@@ -39,6 +39,7 @@ import com.neb.dto.employee.EmployeeProfileDto;
 import com.neb.dto.employee.UpdateEmployeeRequestDto;
 import com.neb.dto.employee.UpdateEmployeeResponseDto;
 import com.neb.dto.project.AddProjectRequestDto;
+import com.neb.dto.project.ProjectsResponseDto;
 import com.neb.dto.user.AdminProfileDto;
 import com.neb.dto.user.RegisterNewClientRequest;
 import com.neb.dto.user.RegisterNewUerRequest;
@@ -311,13 +312,13 @@ public class AdminController {
 	    // GET All Projects
 	    @GetMapping("/projects")
 	    @PreAuthorize("hasRole('ROLE_ADMIN')")
-	    public ResponseEntity<ResponseMessage<List<ProjectResponseDto>>> getAllProjects() {
+	    public ResponseEntity<ResponseMessage<List<ProjectsResponseDto>>> getAllProjects() {
 	        return ResponseEntity.ok(projectService.getAllProjects());
 	    }
 
 	    // GET Project By ID
-	    @GetMapping("/{projectId}")
-	    public ResponseEntity<ResponseMessage<ProjectResponseDto>> getProject(@PathVariable Long projectId) {
+	    @GetMapping("project/{projectId}")
+	    public ResponseEntity<ResponseMessage<ProjectsResponseDto>> getProject(@PathVariable Long projectId) {
 	        return ResponseEntity.ok(projectService.getProjectById(projectId));
 	    }
 
@@ -363,16 +364,16 @@ public class AdminController {
 	    }
 	    
 	    @PostMapping("add/project/{projectId}/employees/{employeeId}")
-	    public ResponseEntity<ProjectResponseDto> addEmployeeToProject(@PathVariable Long projectId,@PathVariable Long employeeId)
+	    public ResponseEntity<ResponseMessage<ProjectResponseDto>> addEmployeeToProject(@PathVariable Long projectId,@PathVariable Long employeeId)
 	    {
 	        ProjectResponseDto employeeToProject = projectService.addEmployeeToProject(projectId, employeeId);
-	        return ResponseEntity.ok(employeeToProject);
+	        return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(),HttpStatus.OK.name(),"Projects fetched successfully for client",employeeToProject));
 	    }
 	    
 	    
 	    @GetMapping("view/projects/{projectId}/employees")
-	    public ResponseEntity<ResponseMessage<List<EmployeeResponseDto>>> getEmployeesByProject(@PathVariable Long projectId) {
-	    	List<EmployeeResponseDto> employees = clientService.getEmployeesByProject(projectId);
+	    public ResponseEntity<ResponseMessage<List<EmployeeProfileDto>>> getEmployeesByProject(@PathVariable Long projectId) {
+	    	List<EmployeeProfileDto> employees = clientService.getEmployeesByProject(projectId);
 	        return ResponseEntity.ok(new ResponseMessage<>(200, "SUCCESS", "Employees for project fetched successfully", employees));
 	    }
 	    
