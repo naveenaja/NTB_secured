@@ -3,7 +3,6 @@ package com.neb.service;
 import java.time.LocalDate;
 import java.util.List;
 
-
 import com.neb.dto.AddJobRequestDto;
 import com.neb.dto.AssignLeaveBalanceDTO;
 import com.neb.dto.EmployeeBankDetailsRequest;
@@ -19,7 +18,6 @@ import com.neb.dto.employee.UpdateEmployeeRequestDto;
 import com.neb.dto.employee.UpdateEmployeeResponseDto;
 import com.neb.dto.salary.SalaryRequestDto;
 import com.neb.dto.salary.SalaryResponseDto;
-import com.neb.entity.EmployeeBankDetails;
 import com.neb.entity.JobApplication;
 import com.neb.util.ApprovalStatus;
 
@@ -59,5 +57,7 @@ public interface HrService {
 	public List<EmployeeLeaveDTO> employeeOnLeave();
 	 public List<EmployeeLeaveBalanceDTO> assignLeaveBalance(AssignLeaveBalanceDTO dto);
 	 public TodayAttendanceCountDTO todayAttendanceCount();
+	public String disableEmp(Long id);
+	public String enableEmp(Long id);
 
 }

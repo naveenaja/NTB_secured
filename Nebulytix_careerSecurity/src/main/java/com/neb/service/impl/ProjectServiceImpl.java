@@ -10,9 +10,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.neb.dto.EmployeeResponseDto;
 import com.neb.dto.ProjectResponseDto;
 import com.neb.dto.ResponseMessage;
 import com.neb.dto.UpdateProjectRequestDto;
+import com.neb.dto.client.ClientProfileDto;
+import com.neb.dto.employee.EmployeeProfileDto;
 import com.neb.dto.project.AddProjectRequestDto;
 import com.neb.dto.project.ProjectsResponseDto;
 import com.neb.entity.Client;
@@ -26,6 +29,7 @@ import com.neb.repo.ClientRepository;
 import com.neb.repo.EmployeeRepository;
 import com.neb.repo.ProjectDocumentRepository;
 import com.neb.repo.ProjectRepository;
+import com.neb.service.ClientService;
 import com.neb.service.ProjectService;
 //import com.neb.dto.project.ProjectsResponseDto;
 import com.neb.util.FileUtil;
@@ -48,23 +52,127 @@ public class ProjectServiceImpl implements ProjectService {
     private EmployeeRepository empRepo;
     
     @Autowired
+    private ClientService clientService; 
+    
+    @Autowired
     private ModelMapper mapper;
     @Value("${project.file.upload-dir}")
     private String uploadDir;
     
 
     @Override
-    public ResponseMessage<List<ProjectResponseDto>> getAllProjects() {
-        List<ProjectResponseDto> dtoList =
-                projectRepository.findAll().stream().map(this::map).toList();
+    public ResponseMessage<List<ProjectsResponseDto>> getAllProjects() {
+    	List<Project> projects = projectRepository.findAll();
+
+        List<ProjectsResponseDto> dtoList = projects.stream()
+                .map(project -> {
+
+                    ProjectsResponseDto dto = new ProjectsResponseDto();
+
+                    // 🔹 Project fields
+                    dto.setId(project.getId());
+                    dto.setProjectName(project.getProjectName());
+                    dto.setProjectCode(project.getProjectCode());
+                    dto.setProjectType(project.getProjectType());
+                    dto.setDescription(project.getDescription());
+                    dto.setStartDate(project.getStartDate());
+                    dto.setExpectedEndDate(project.getExpectedEndDate());
+                    dto.setPriority(project.getPriority());
+                    dto.setBudget(project.getBudget());
+                    dto.setRiskLevel(project.getRiskLevel());
+                    dto.setStatus(project.getStatus());
+                    dto.setProgress(project.getProgress());
+                    dto.setQuotationPdfUrl(project.getQuotationPdfUrl());
+                    dto.setContractPdfUrl(project.getContractPdfUrl());
+                    dto.setRequirementDocUrl(project.getRequirementDocUrl());
+
+                    // ✅ CLIENT MAPPING
+                    if (project.getClient() != null) {
+                        Client client = project.getClient();
+
+                        ClientProfileDto clientDto = new ClientProfileDto();
+                        clientDto.setId(client.getId());
+                        clientDto.setCompanyName(client.getCompanyName());
+                        clientDto.setContactPerson(client.getContactPerson());
+                        clientDto.setContactEmail(client.getContactEmail());
+                        clientDto.setPhone(client.getPhone());
+                        clientDto.setAlternatePhone(client.getAlternatePhone());
+                        clientDto.setAddress(client.getAddress());
+                        clientDto.setWebsite(client.getWebsite());
+                        clientDto.setIndustryType(client.getIndustryType());
+                        clientDto.setGstNumber(client.getGstNumber());
+                        clientDto.setEmpStatus(client.getStatus());
+                        clientDto.setUserEnabled(
+                                client.getUser() != null && client.getUser().isEnabled()
+                        );
+
+                        dto.setClient(clientDto);
+                    }
+
+                    
+                    if (project.getEmployees() != null && !project.getEmployees().isEmpty()) {
+                        List<EmployeeProfileDto> employeeDtos =
+                                clientService.getEmployeesByProject(project.getId());
+                        dto.setEmployees(employeeDtos);
+                    }
+
+                    return dto;
+                })
+                .toList();
         return new ResponseMessage<>(200, "SUCCESS", "All projects", dtoList);
     }
 
     @Override
-    public ResponseMessage<ProjectResponseDto> getProjectById(Long id) {
-        Project project = projectRepository.findById(id)
-                .orElseThrow(() -> new CustomeException("Project not found"));
-        return new ResponseMessage<>(200, "SUCCESS", "Project details", map(project));
+    public ResponseMessage<ProjectsResponseDto> getProjectById(Long id) {
+    	 Project project = projectRepository.findProjectWithClientAndEmployees(id)
+    	            .orElseThrow(() -> new CustomeException("Project not found"));
+
+    	    ProjectsResponseDto dto = new ProjectsResponseDto();
+
+    	    // 🔹 Project fields
+    	    dto.setId(project.getId());
+    	    dto.setProjectName(project.getProjectName());
+    	    dto.setProjectCode(project.getProjectCode());
+    	    dto.setProjectType(project.getProjectType());
+    	    dto.setDescription(project.getDescription());
+    	    dto.setStartDate(project.getStartDate());
+    	    dto.setExpectedEndDate(project.getExpectedEndDate());
+    	    dto.setPriority(project.getPriority());
+    	    dto.setBudget(project.getBudget());
+    	    dto.setRiskLevel(project.getRiskLevel());
+    	    dto.setStatus(project.getStatus());
+    	    dto.setProgress(project.getProgress());
+    	    dto.setQuotationPdfUrl(project.getQuotationPdfUrl());
+    	    dto.setContractPdfUrl(project.getContractPdfUrl());
+    	    dto.setRequirementDocUrl(project.getRequirementDocUrl());
+
+    	    // ✅ CLIENT MAPPING (NO fromEntity)
+    	    if (project.getClient() != null) {
+    	        Client client = project.getClient();
+
+    	        ClientProfileDto clientDto = new ClientProfileDto();
+    	        clientDto.setId(client.getId());
+    	        clientDto.setCompanyName(client.getCompanyName());
+    	        clientDto.setContactPerson(client.getContactPerson());
+    	        clientDto.setContactEmail(client.getContactEmail());
+    	        clientDto.setPhone(client.getPhone());
+    	        clientDto.setAlternatePhone(client.getAlternatePhone());
+    	        clientDto.setAddress(client.getAddress());
+    	        clientDto.setWebsite(client.getWebsite());
+    	        clientDto.setIndustryType(client.getIndustryType());
+    	        clientDto.setGstNumber(client.getGstNumber());
+    	        clientDto.setEmpStatus(client.getStatus());
+    	        clientDto.setUserEnabled(client.getUser().isEnabled());
+
+    	        dto.setClient(clientDto);
+    	    }
+
+    	    // ✅ EMPLOYEE LIST MAPPING (NO fromEntity)
+    	    if (project.getEmployees() != null && !project.getEmployees().isEmpty()) {
+    	        List<EmployeeProfileDto> employeeDtos = clientService.getEmployeesByProject(id);
+    	        dto.setEmployees(employeeDtos);
+    	    }
+        return new ResponseMessage<>(200, "SUCCESS", "Project details", dto);
     }
 
     @Override
@@ -123,13 +231,9 @@ public class ProjectServiceImpl implements ProjectService {
     public List<ProjectResponseDto> getProjectsByClient(Long clientId) {
         List<Project> projects = projectRepository.findByClientId(clientId);
 
-        if (projects.isEmpty()) {
-            throw new CustomeException("No projects found for client with ID: " + clientId);
-        }
+        if (projects.isEmpty()) { throw new CustomeException("No projects found for client with ID: " + clientId);}
 
-        return projects.stream()
-                .map(ProjectResponseDto::fromEntity)
-                .toList();
+        return projects.stream().map(ProjectResponseDto::fromEntity).toList();
     }
 
 
@@ -172,6 +276,26 @@ public class ProjectServiceImpl implements ProjectService {
             doc.setProject(savedProject);
             docRepo.save(doc);
         }
+        // ✅ Files stored in projects/
+        project.setQuotationPdfUrl(storeFile(quotation));
+        project.setRequirementDocUrl(storeFile(requirement));
+        
+        project.setRequirementDocUrl(storeFile(contract));
+        project.setContractPdfUrl(storeFile(contract));
+
+        return projectRepository.save(project);
+    }
+    
+   //  Store file inside projects/ directory
+   private String storeFile(MultipartFile file) {
+        try {
+            if (file == null || file.isEmpty()) {
+                throw new FileStorageException("Cannot store empty file");
+            }
+
+            // Sanitize filename
+            String safeFileName =
+                    file.getOriginalFilename().replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
 
         if (requirement != null && !requirement.isEmpty()) {
             String path = FileUtil.upload(requirement, uploadDir);
@@ -216,9 +340,7 @@ public class ProjectServiceImpl implements ProjectService {
 	        employee.setProject(project);
 
 	        Project savedProject = projectRepository.save(project); // owning side
-
-	        
-	   return mapper.map(savedProject, ProjectResponseDto.class);
+       return mapper.map(savedProject, ProjectResponseDto.class);
        
 	}
 
@@ -242,8 +364,6 @@ public class ProjectServiceImpl implements ProjectService {
 
 	        // Save owning side
 	        projectRepository.save(project);
-	   
-		
 	}
 
 	@Override
@@ -255,9 +375,6 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	public List<ProjectsResponseDto> getProjectsByEmployeeId(Long employeeId) {
 		 List<Project> projects = projectRepository.findProjectsByEmployeeId(employeeId);
-		 
-		 return projects.stream()
-		            .map(project -> mapper.map(project, ProjectsResponseDto.class))
-		            .toList();
+		 return projects.stream().map(project -> mapper.map(project, ProjectsResponseDto.class)).toList();
 	}
 }

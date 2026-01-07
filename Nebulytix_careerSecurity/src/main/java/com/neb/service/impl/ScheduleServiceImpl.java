@@ -29,10 +29,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     public List<Schedule> getSchedulesByEmployee(Long employeeId) {
         List<Schedule> schedules = scheduleRepository.findByEmployeeId(employeeId);
-        if (schedules.isEmpty()) {
-            
-            throw new CustomeException("No schedules found for employee ID: " + employeeId);
-        }
+        if (schedules.isEmpty()){ throw new CustomeException("No schedules found for employee ID: " + employeeId); }
         return schedules;
     }
 

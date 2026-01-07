@@ -19,12 +19,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-
 import com.neb.constants.WorkStatus;
 import com.neb.dto.AddDailyReportRequestDto;
 import com.neb.dto.EmployeeDTO;
 import com.neb.dto.EmployeeLeaveDTO;
-import com.neb.dto.EmployeeResponseDto;
 import com.neb.dto.WorkResponseDto;
 import com.neb.dto.employee.AddEmployeeRequest;
 import com.neb.dto.employee.EmployeeProfileDto;
@@ -70,31 +68,26 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Autowired
     private EmployeeRepository employeeRepository;
-    
     @Autowired
     private PayslipRepository payslipRepo;
     @Autowired
 	private EmployeeLoginDetailsRepo empLoginRepo;
-
     @Autowired
     private ModelMapper mapper;
     @Autowired
 	private EmployeeLeaveRepository empLeaveRepo;
-
-	@Autowired
+    @Autowired
 	private EmployeeLeavePolicyRepo leavePolicyRepo;
 	@Autowired
 	private NotificationService notificationService;
 	
 	@Autowired
+    @Autowired
 	private EmployeeLeaveBalanceRepo leaveBalanceRepo;
-    
     @Autowired
     private WorkRepository workRepository;
-    
     @Autowired
     private DailyReportRepository dailyReportRepository;
-    
     @Autowired
     private UsersRepository usersRepository;
 
@@ -119,9 +112,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 		return saveEmployee.getId();
 	}
     
-
-
-	@Override
+    @Override
 	public EmployeeProfileDto getMyProfile() {
 		
 		// 1. Get logged-in user email
@@ -154,7 +145,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 		
 		
 		Employee emp = employeeRepository.findById(employeeId)
-	            .orElseThrow(() -> new CustomeException("Employee not found with id: "+employeeId));
+	                            .orElseThrow(() -> new CustomeException("Employee not found with id: "+employeeId));
 		
 		Payslip p = new Payslip();
         p.setEmployee(emp);
@@ -255,7 +246,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         workRes.setAttachmentUrl(savedWork.getAttachmentUrl());
         workRes.setEmployeeId(savedWork.getEmployee().getId());
         workRes.setEmployeeName(savedWork.getEmployee().getFirstName());
-       // workRes.setEmployeeEmail(savedWork.getEmployee().getEmail());
+      
         
         return workRes ;
     }
@@ -263,7 +254,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 	@Override
 	public String submitDailyReport(AddDailyReportRequestDto request) {
 	
-		//Employee emp = empRepo.findById(request.getEmployee_id()).orElseThrow(()->new CustomeException("employee not found with id:"+request.getEmployee_id()));
 		Employee emp = employeeRepository.findById(request.getEmployee_id())
 	            .orElseThrow(() -> new CustomeException("employee not found with id: " + request.getEmployee_id()));
 
@@ -274,20 +264,19 @@ public class EmployeeServiceImpl implements EmployeeService {
 	        
 	        Optional<DailyReport> existingOpt = dailyReportRepository.findByEmployeeIdAndReportDate(emp.getId(), date);
 		
-	        
-	         DailyReport report;
-        if (existingOpt.isPresent()) {
+	        DailyReport report;
+         if (existingOpt.isPresent()) {
             // update existing
             report = existingOpt.get();
             report.setSummary(request.getSummary());
             
-        } else {
+          } else {
             // create new
             report = new DailyReport();
             report.setEmployee(emp);
             report.setReportDate(date);
             report.setSummary(request.getSummary());
-        }
+         }
 
         DailyReport saved = dailyReportRepository.save(report);
 
@@ -729,10 +718,30 @@ public class EmployeeServiceImpl implements EmployeeService {
 	    leave.setAppliedDate(LocalDate.now());
 	    leave.setCurrentYear(year);
 	    leave.setCurrentMonth(LocalDate.now().getMonthValue());
+	       // 8️⃣ Save Leave Request
+	       EmployeeLeaves leave = new EmployeeLeaves();
+	       leave.setEmployee(employee);
+	       leave.setLeaveType(wfh.getLeaveType());
+	       leave.setStartDate(wfh.getStart());
+	       leave.setEndDate(wfh.getEnd());
+	       leave.setReason(wfh.getReason());
+	       leave.setTotalDays(requestedDays);
+	       leave.setAppliedDate(LocalDate.now());
+	       leave.setCurrentYear(year);
+	       leave.setCurrentMonth(LocalDate.now().getMonthValue());
 
 	    leave.setLeaveStatus(ApprovalStatus.PENDING);
 
 	    EmployeeLeaves saved = empLeaveRepo.save(leave);
+	       // 9️⃣ Prepare Response
+	       EmployeeLeaveDTO dto = new EmployeeLeaveDTO();
+	       dto.setId(saved.getId());
+	       dto.setId(employee.getId());
+	       dto.setLeaveType(saved.getLeaveType());
+	       dto.setStart(saved.getStartDate());
+	       dto.setEnd(saved.getEndDate());
+	       dto.setReason(saved.getReason());
+	       dto.setTotalDays(requestedDays);
 
 	   
 	    notificationService.notifyHrLeaveApplied(saved);

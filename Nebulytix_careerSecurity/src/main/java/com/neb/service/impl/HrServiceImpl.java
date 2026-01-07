@@ -10,6 +10,7 @@ import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -58,6 +59,7 @@ import com.neb.repo.EmployeeSalaryRepository;
 import com.neb.repo.JobApplicationRepository;
 import com.neb.repo.JobRepository;
 import com.neb.repo.PayslipRepository;
+import com.neb.repo.ProjectRepository;
 import com.neb.repo.UsersRepository;
 import com.neb.service.EmailService;
 import com.neb.service.HrService;
@@ -72,28 +74,23 @@ import jakarta.transaction.Transactional;
 @Service
 public class HrServiceImpl implements HrService {
 
-    @Autowired
+   
+	@Autowired
     private EmployeeRepository empRepo;
     @Autowired
 	private EmployeeLeaveBalanceRepo empLeaveBlnceRepo;
 	@Autowired
 	private EmployeeMontlyReportRepo employeeMonthlyReportRepo;
-
-	@Autowired
+    @Autowired
 	private EmployeeLoginDetailsRepo empLoginRepo;
-
     @Autowired
     private EmployeeSalaryRepository salRepo;
-    
     @Autowired
     private PayslipRepository payslipRepo;
-
     @Autowired
     private JobRepository jobRepository;
-
     @Autowired
     private DailyReportRepository dailyReportRepository;
-
     @Autowired
     private JobApplicationRepository jobApplicationRepository;
     @Autowired
@@ -101,16 +98,18 @@ public class HrServiceImpl implements HrService {
 
     @Autowired
     private EmailService emailService;
-
     @Autowired
     private ModelMapper mapper;
-    
     @Autowired 
     private UsersRepository usersRepository;
     @Autowired
     private EmployeeBankDetailsRepository bankRepo;
     @Autowired
     private EmployeeLeaveRepository empLeavesRepo;
+    
+    @Autowired
+    private ProjectRepository projectRepo;
+    
 
     @Value("${daily-report.folder-path}")
     private String dailyReportFolderPath;
@@ -119,28 +118,155 @@ public class HrServiceImpl implements HrService {
     public EmployeeDetailsResponseDto getEmployee(Long id) {
         Employee emp = empRepo.findById(id).orElseThrow(() -> new CustomeException("Employee not found with id: " + id));
         return mapper.map(emp, EmployeeDetailsResponseDto.class);
+//    	
+//    	Employee employeeDetail = empRepo.findEmployeeFullDetails(id)
+//    	        .orElseThrow(() -> new CustomeException("Employee not found"));
+//
+//    	EmployeeFullDetailResponseDto response = new EmployeeFullDetailResponseDto();
+//
+//    	/* =========================
+//    	   1. BASIC EMPLOYEE DETAILS
+//    	   ========================= */
+//    	EmployeeProfileDto employeeDto = mapper.map(employeeDetail, EmployeeProfileDto.class);
+//        
+//    	System.out.println(employeeDto);
+//       // override mismatched fields
+//    	if (employeeDetail.getUser() != null) {
+//    		employeeDto.setEmail(employeeDetail.getUser().getEmail());
+//    	    employeeDto.setUserEnabled(employeeDetail.getUser() != null && employeeDetail.getUser().isEnabled());
+//    	}
+//        response.setEmployee(employeeDto);
+//
+//    	/* =========================
+//    	   2. BANK DETAILS
+//    	   ========================= */
+//    	if (employeeDetail.getBankDetails() != null) {
+//    	    EmployeeBankDetailsResponse bankDto = mapper.map(employeeDetail.getBankDetails(), EmployeeBankDetailsResponse.class);
+//    	    System.out.println("  bank ===> "+bankDto);
+//    	    response.setBankDetail(bankDto);
+//    	}
+//
+//    	/* =========================
+//    	   3. SALARY DETAILS
+//    	   ========================= */
+//    	List<EmployeeSalary> salaries = salRepo.findByEmployeeIdOrderByEffectiveFromDesc(id);
+//          System.out.println("   salary"+salaries);
+//        List<SalaryResponseDto> salaryDtos = salaries.stream()
+//                .map(salary -> {
+//                    SalaryResponseDto dto =
+//                            mapper.map(salary, SalaryResponseDto.class);
+//                    dto.setEmployeeId(id);
+//                    return dto;
+//                })
+//                .collect(Collectors.toList());
+//             response.setSalaries(salaryDtos);
+//
+//    	    // ✅ ACTIVE SALARY
+//    	    SalaryResponseDto activeSalary = getActiveSalary(id);
+//    	    System.out.println(activeSalary);
+//    	    SalaryResponseDto activeSal = mapper.map(activeSalary,SalaryResponseDto.class);
+//    	    response.setActiveSalary(activeSal);
+//    	    
+//    
+//          /* =========================
+//    	   4. ALL PROJECTS
+//    	   ========================= */
+//    	 List<ProjectResponseDto> listProj = projectRepo.findProjectsByEmployeeId(id).stream()
+//    	        .map(project -> {
+//    	        	ProjectResponseDto dto = mapper.map(project, ProjectResponseDto.class);
+//    	        	dto.setClientId(
+// 	                project.getClient() != null ? project.getClient().getId() : null
+// 	                );
+//    	          return dto;	
+//    	        })
+//    	        .toList();
+//    	 
+//       	 response.setProjects(listProj);
+//    	 
+//    	    /* =========================
+//    	       5. ACTIVE PROJECT
+//    	       ========================= */
+//    	    
+//    	    Project project = employeeDetail.getProject();
+//    	    if(project != null)
+//    	    {
+//    	    	ProjectResponseDto projDto = mapper.map(project, ProjectResponseDto.class);
+//    	    	response.setActiveProject(projDto);
+//    	    }
+//    
+//
+//    	return response;
     }
-
     @Override
     public String deleteById(Long id) {
-    	Employee employee = empRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+    	    Employee employee = empRepo.findByIdIncludingInactive(id)
+    	                       .orElseThrow(() ->new EmployeeNotFoundException("Employee not found with id: " + id));
+            if (!"inactive".equalsIgnoreCase(employee.getEmpStatus())) {
+    	        throw new CustomeException("Employee must be disabled before permanent deletion with id: " + id);
+    	    }
 
-        // Soft delete employee
+    	    Users user = employee.getUser();
+
+            if (user != null && user.isEnabled()) {
+    	        throw new CustomeException("User account must be disabled before deleting employee with id: " + id);
+    	    }
+
+            employee.setUser(null);
+            empRepo.delete(employee);
+
+    	    if (user != null) {
+    	        usersRepository.delete(user);
+    	    }
+
+    	    return "Employee permanently deleted with id: " + id;
+    }
+  
+    @Override
+	public String disableEmp(Long id) {
+    	
+    	Employee employee = empRepo.findById(id)
+                .orElseThrow(() ->
+                        new EmployeeNotFoundException("Employee not found with id: " + id));
+
+        if ("inactive".equalsIgnoreCase(employee.getEmpStatus())) {
+        	throw new CustomeException("Employee already disabled with id: " + id);
+        }
+
         employee.setEmpStatus("inactive");
 
-        // Disable linked user
         Users user = employee.getUser();
-        if (user != null) {
+        if (user != null && user.isEnabled()) {
             user.setEnabled(false);
             usersRepository.save(user);
         }
 
         empRepo.save(employee);
 
-        return "Employee and user account deactivated successfully";
-    }
+        return "Employee disabled successfully with id: " + id;
 
+	}
+
+	@Override
+	public String enableEmp(Long id) {
+		 Employee employee = empRepo.findById(id).orElseThrow(() ->new EmployeeNotFoundException("Employee not found with id: " + id));
+           System.out.println(employee);
+		    if (!"inactive".equalsIgnoreCase(employee.getEmpStatus())) {
+	              throw new CustomeException("Employee already enabled with id: " + id);
+	        }
+
+	        employee.setEmpStatus("active");
+
+	        Users user = employee.getUser();
+	        if (user != null && !user.isEnabled()) {
+	            user.setEnabled(true);
+	            usersRepository.save(user);
+	        }
+
+	        empRepo.save(employee);
+
+	        return "Employee enabled successfully with id: " + id;
+
+	}
     @Override
     public EmployeeDetailsResponseDto addAttendence(Long id, int days) {
         Employee emp = empRepo.findById(id).orElseThrow(() -> new CustomeException("Employee not found"));
@@ -344,10 +470,13 @@ public class HrServiceImpl implements HrService {
 
 	@Override
 	public SalaryResponseDto getActiveSalary(Long employeeId) {
-		EmployeeSalary salary = salRepo.findByEmployeeIdAndActiveTrue(employeeId)
-                                .orElseThrow(() ->new SalaryNotFoundException("Active salary not found for employeeId: " + employeeId));
-
-       return mapper.map(salary, SalaryResponseDto.class);
+		  Optional<EmployeeSalary> salaryopt = salRepo.findByEmployeeIdAndActiveTrue(employeeId);
+             if(salaryopt != null) {
+            	 return mapper.map(salaryopt.get(), SalaryResponseDto.class); 
+             }
+             else {
+            	 return null;
+             }
 	}
 
 	@Override

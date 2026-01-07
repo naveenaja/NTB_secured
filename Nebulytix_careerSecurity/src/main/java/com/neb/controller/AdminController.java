@@ -39,6 +39,7 @@ import com.neb.dto.employee.EmployeeProfileDto;
 import com.neb.dto.employee.UpdateEmployeeRequestDto;
 import com.neb.dto.employee.UpdateEmployeeResponseDto;
 import com.neb.dto.project.AddProjectRequestDto;
+import com.neb.dto.project.ProjectsResponseDto;
 import com.neb.dto.user.AdminProfileDto;
 import com.neb.dto.user.RegisterNewClientRequest;
 import com.neb.dto.user.RegisterNewUerRequest;
@@ -110,7 +111,7 @@ public class AdminController {
         );
     }
 
-	    // ✅ Get all Work of employee
+	    //  Get all Work of employee
 	    @GetMapping("/getAllWork/{empId}")
 	    public ResponseEntity<ResponseMessage<List<WorkResponseDto>>> getAllWork(@PathVariable Long empId) {
 	        List<WorkResponseDto> works = adminService.getAllWorks(empId);
@@ -129,17 +130,36 @@ public class AdminController {
 	    	String deleteRes = adminService.deleteAdmin(id);
 	    	return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Admin deleted successfully", deleteRes));
 	    }
-	    // delete (HR,MANAGER,EMPLOYEE) by id
-	    @DeleteMapping("/delete/hr/{id}")
-	    public ResponseEntity<ResponseMessage<?>> deleteHr(@PathVariable Long id){
-	    	String deleteRes = adminService.deleteHr(id);
-	    	return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "hr deleted successfully", deleteRes));
+	    
+	    @PutMapping("/{id}/disable")
+	    public ResponseEntity<ResponseMessage<?>> disableAdmin(@PathVariable Long id) {
+	    	String msg = adminService.disableAdmin(id);
+	    	return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Admin Disabled successfully", msg));
 	    }
+
+	    @PutMapping("/{id}/enable")
+	    public ResponseEntity<ResponseMessage<?>> enableAdmin(@PathVariable Long id) {
+	    	String msg = adminService.enableAdmin(id);
+	        return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Admin Enabled successfully", msg));
+	    }
+	   
 	    
 	    @DeleteMapping("/delete/client/{id}")
 	    public ResponseEntity<ResponseMessage<?>> deleteClient(@PathVariable Long id){
 	    	String deleteRes = adminService.deleteClient(id);
 	    	return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Client deleted successfully", deleteRes));
+	    }
+	    
+	    @PutMapping("client/disable/{id}")
+	    public ResponseEntity<ResponseMessage<?>> disableClient(@PathVariable Long id) {
+	        String msg = adminService.disableClient(id);
+	        return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Client disabled successfully",msg));
+	    }
+
+	    @PutMapping("client/enable/{id}")
+	    public ResponseEntity<ResponseMessage<?>> enableClient(@PathVariable Long id) {
+	        String msg = adminService.enableClient(id);
+	        return ResponseEntity.ok(new ResponseMessage<>(200, "OK", "Client enabled successfully", msg));
 	    }
 	    
 	    @GetMapping("/getEmp/{id}")
@@ -162,9 +182,7 @@ public class AdminController {
 	            .filename("payslip_" + id + ".pdf")
 	            .build());
 
-	        return ResponseEntity.ok()
-	                             .headers(headers)
-	                             .body(pdf);
+	        return ResponseEntity.ok().headers(headers).body(pdf);
 	    }
 
 	    
@@ -294,13 +312,13 @@ public class AdminController {
 	    // GET All Projects
 	    @GetMapping("/projects")
 	    @PreAuthorize("hasRole('ROLE_ADMIN')")
-	    public ResponseEntity<ResponseMessage<List<ProjectResponseDto>>> getAllProjects() {
+	    public ResponseEntity<ResponseMessage<List<ProjectsResponseDto>>> getAllProjects() {
 	        return ResponseEntity.ok(projectService.getAllProjects());
 	    }
 
 	    // GET Project By ID
-	    @GetMapping("/{projectId}")
-	    public ResponseEntity<ResponseMessage<ProjectResponseDto>> getProject(@PathVariable Long projectId) {
+	    @GetMapping("project/{projectId}")
+	    public ResponseEntity<ResponseMessage<ProjectsResponseDto>> getProject(@PathVariable Long projectId) {
 	        return ResponseEntity.ok(projectService.getProjectById(projectId));
 	    }
 
@@ -346,16 +364,16 @@ public class AdminController {
 	    }
 	    
 	    @PostMapping("add/project/{projectId}/employees/{employeeId}")
-	    public ResponseEntity<ProjectResponseDto> addEmployeeToProject(@PathVariable Long projectId,@PathVariable Long employeeId)
+	    public ResponseEntity<ResponseMessage<ProjectResponseDto>> addEmployeeToProject(@PathVariable Long projectId,@PathVariable Long employeeId)
 	    {
 	        ProjectResponseDto employeeToProject = projectService.addEmployeeToProject(projectId, employeeId);
-	        return ResponseEntity.ok(employeeToProject);
+	        return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(),HttpStatus.OK.name(),"Projects fetched successfully for client",employeeToProject));
 	    }
 	    
 	    
 	    @GetMapping("view/projects/{projectId}/employees")
-	    public ResponseEntity<ResponseMessage<List<EmployeeResponseDto>>> getEmployeesByProject(@PathVariable Long projectId) {
-	    	List<EmployeeResponseDto> employees = clientService.getEmployeesByProject(projectId);
+	    public ResponseEntity<ResponseMessage<List<EmployeeProfileDto>>> getEmployeesByProject(@PathVariable Long projectId) {
+	    	List<EmployeeProfileDto> employees = clientService.getEmployeesByProject(projectId);
 	        return ResponseEntity.ok(new ResponseMessage<>(200, "SUCCESS", "Employees for project fetched successfully", employees));
 	    }
 	    

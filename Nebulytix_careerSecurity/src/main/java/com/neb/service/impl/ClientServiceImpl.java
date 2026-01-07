@@ -16,6 +16,7 @@ import com.neb.dto.EmployeeResponseDto;
 import com.neb.dto.WorkResponseDto;
 import com.neb.dto.client.AddClientRequest;
 import com.neb.dto.client.ClientProfileDto;
+import com.neb.dto.employee.EmployeeProfileDto;
 import com.neb.entity.Client;
 import com.neb.entity.DailyReport;
 import com.neb.entity.Employee;
@@ -37,20 +38,17 @@ public class ClientServiceImpl implements ClientService{
 
 	@Autowired
 	private UsersRepository usersRepository;
-	
 	@Autowired
 	private ClientRepository clientRepository;
-	
-	@Autowired
+    @Autowired
 	private ModelMapper mapper;
 	@Autowired	
- private EmployeeRepository employeeRepo;
+    private EmployeeRepository employeeRepo;
 	@Autowired
 	private  ProjectRepository projectRepo;
 	@Autowired
 	private DailyReportRepository dailyReportRepository;
-	
-	@Autowired
+    @Autowired
 	private WorkRepository workRepo;
 	
 	
@@ -60,18 +58,14 @@ public class ClientServiceImpl implements ClientService{
         String email = AuthUtils.getCurrentUserEmail();
         if (email == null) throw new RuntimeException("User not authenticated");
 
-        Users user = usersRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Users user = usersRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
-        Client client = clientRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new RuntimeException("Client profile not found"));
-
+        Client client = clientRepository.findByUserId(user.getId()).orElseThrow(() -> new RuntimeException("Client profile not found"));
         ClientProfileDto clientProfileDto = mapper.map(client, ClientProfileDto.class);
-        return clientProfileDto;
+      return clientProfileDto;
     }
 
-
-	@Override
+     @Override
 	public Long createClient(AddClientRequest addClientReq, Users user) {
 		
 		Client client = mapper.map(addClientReq, Client.class);
@@ -83,13 +77,10 @@ public class ClientServiceImpl implements ClientService{
 	  //  Get logged-in client
     private Users getLoggedInClient() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return usersRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Client not found with email: " + email));
+        return usersRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Client not found with email: " + email));
     }
 
-  
-
-    @Override
+      @Override
     public List<Project> getProjectsForLoggedInClient() {
         Users client = getLoggedInClient();
         return projectRepo.findByClient_Id(client.getId());
@@ -103,11 +94,15 @@ public class ClientServiceImpl implements ClientService{
     }
 
     @Override
-    public List<EmployeeResponseDto> getEmployeesByProject(Long projectId) {
+    public List<EmployeeProfileDto> getEmployeesByProject(Long projectId) {
     	List<Employee> employees = employeeRepo.findEmployeesByProjectId(projectId);
 
         return employees.stream()
-                .map(emp -> mapper.map(emp, EmployeeResponseDto.class))
+        		.map(emp -> {
+                    EmployeeProfileDto dto = mapper.map(emp, EmployeeProfileDto.class);
+                    dto.setEmail(emp.getUser().getEmail()); 
+                    return dto;
+                })
                 .toList();
     }
 
@@ -151,4 +146,6 @@ public class ClientServiceImpl implements ClientService{
 
         return dailyReportRepository.findByEmployee_Project_Id(projectId);
     }
+
+	
 }

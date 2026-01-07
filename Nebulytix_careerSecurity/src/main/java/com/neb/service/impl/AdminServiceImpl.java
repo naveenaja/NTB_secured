@@ -258,23 +258,85 @@ public class AdminServiceImpl implements AdminService{
 	public String deleteClient(Long id) {
 		
 		Client client = clientRepo.findById(id)
-				.orElseThrow(() -> new CustomeException("Client not found with id :"+id));
-		
-		// 2. Mark client inactive
-        client.setStatus("inactive");
+	            .orElseThrow(() ->
+	                    new CustomeException("Inactive client not found with id: " + id));
 
-        // 3. Disable related user
-        Users user = client.getUser();
-        if (user != null) {
-            user.setEnabled(false);
-            usersRepository.save(user); //  updates users table
-        }
+	    Users user = client.getUser();
 
-        // 4. Save client
-        clientRepo.save(client);
-        
-        return "Client and user account deactivated successfully";
+	    if (user != null && user.isEnabled()) {
+	        throw new CustomeException(
+	                "User must be disabled before deleting client with id: " + id);
+	    }
+
+	    // 🔴 Break FK relation
+	    client.setUser(null);
+
+	    // 1️⃣ delete client (child)
+	    clientRepo.delete(client);
+
+	    // 2️⃣ delete user (parent)
+	    if (user != null) {
+	        usersRepository.delete(user);
+	    }
+
+	    return "Client permanently deleted with id: " + id;
+
 	}
+	
+	@Override
+	public String disableClient(Long id) {
+		Client client = clientRepo.findById(id)
+	            .orElseThrow(() ->
+	                    new CustomeException("Client not found with id: " + id));
+
+	    if ("inactive".equalsIgnoreCase(client.getStatus())) {
+	        throw new CustomeException("Client is already inactive with id: " + id);
+	    }
+
+	    // Mark client inactive
+	    client.setStatus("inactive");
+
+	    // Disable related user
+	    Users user = client.getUser();
+	    if (user != null) {
+	        user.setEnabled(false);
+	        usersRepository.save(user);
+	    }
+
+	    clientRepo.save(client);
+
+	    return "Client and user account disabled successfully";
+
+	}
+
+	@Override
+	public String enableClient(Long id) {
+		Client client = clientRepo.findById(id)
+	            .orElseThrow(() ->
+	                    new CustomeException("Client not found with id: " + id));
+
+	    if ("active".equalsIgnoreCase(client.getStatus())) {
+	        throw new CustomeException("Client is already active with id: " + id);
+	    }
+
+	    // Activate client
+	    client.setStatus("active");
+
+	    // Enable related user
+	    Users user = client.getUser();
+	    if (user != null) {
+	        user.setEnabled(true);
+	        usersRepository.save(user);
+	    }
+
+	    clientRepo.save(client);
+
+	    return "Client and user account enabled successfully";
+
+	}
+
+	
+
 	
 	@Override
 	public EmployeeDetailsResponseDto getEmployee(Long id) {
@@ -300,9 +362,8 @@ public class AdminServiceImpl implements AdminService{
 
 	    Employee hr = empRepo.findById(id)
 	            .orElseThrow(() -> new ResourceNotFoundException("HR not found with id: " + id));
-
-
-	    // -------- BASIC DETAILS --------
+	    
+             // -------- BASIC DETAILS --------
 	    if (updateReq.getFirstName() != null && !updateReq.getFirstName().isEmpty())
 	        hr.setFirstName(updateReq.getFirstName());
 
@@ -314,41 +375,54 @@ public class AdminServiceImpl implements AdminService{
 
 	    if (updateReq.getCardNumber() != null && !updateReq.getCardNumber().isEmpty())
 	        hr.setCardNumber(updateReq.getCardNumber());
-
-
-	    if (updateReq.getGender() != null && !updateReq.getGender().isEmpty())
+	    
+        if (updateReq.getGender() != null && !updateReq.getGender().isEmpty())
 	        hr.setGender(updateReq.getGender());
-
-	    // -------- SALARY + LEAVES --------
+          // -------- SALARY + LEAVES --------
 	    if (updateReq.getPaidLeaves() != 0)
 	        hr.setPaidLeaves(updateReq.getPaidLeaves());
 
+           // -------- SAVE --------
 	    Employee updatedHr = empRepo.save(hr);
-
-	    return mapper.map(updatedHr, EmployeeDetailsResponseDto.class);
+     return mapper.map(updatedHr, EmployeeDetailsResponseDto.class);
 	}
 
      // delete the admin based on ID
 	@Override
 	public String deleteAdmin(Long id)
 	{
-		  Users users=usersRepository.findById(id)
-				      .orElseThrow(() ->new CustomeException("Admin not found with id: " + id));
-		  
-		users.setEnabled(false);
-		usersRepository.save(users);
-		return "Admin soft deleted with id: " + users.getId();
+	    Users users=usersRepository.findById(id).orElseThrow(() ->new CustomeException("Admin not found with id: " + id));
+	    if (users.isEnabled()) {
+	        throw new CustomeException("Admin must be disabled before deletion. Disable admin with id: " + id); }
+	    usersRepository.delete(users);
+      return "Admin  deleted with id: " + users.getId();
+	}
+    
+	@Override
+	public String disableAdmin(Long id) {
+		 Users users=usersRepository.findById(id).orElseThrow(() ->new CustomeException("Admin not found with id: " + id));
+			users.setEnabled(false);
+			usersRepository.save(users);
+	      return "Admin Disabled with id: " + users.getId();
 	}
 
+	@Override
+	public String enableAdmin(Long id) {
+		Users users=usersRepository.findById(id).orElseThrow(() ->new CustomeException("Admin not found with id: " + id));
+		users.setEnabled(true);
+		usersRepository.save(users);
+      return "Admin Enabled with id: " + users.getId();
+	}
+	
 	@Override
 	public List<AdminProfileDto> getOnlyAdmin() 
 	{
 		  List<Users> admins = empRepo.findOnlyAdmin();
 		  System.out.println(admins);
-		 List<AdminProfileDto> allAdmin = admins.stream()
-			        .map(emp -> mapper.map(emp,AdminProfileDto.class))
-			        .collect(Collectors.toList());
-         System.out.println(allAdmin);
+		  List<AdminProfileDto> allAdmin = admins.stream()
+			                              .map(emp -> mapper.map(emp,AdminProfileDto.class))
+			                              .collect(Collectors.toList());
+          System.out.println(allAdmin);
 		 return allAdmin;
 	}
 	
@@ -394,10 +468,12 @@ public class AdminServiceImpl implements AdminService{
 			            dto.setSalary(emp.getSalary());
 			            dto.setProfilePictureUrl(emp.getProfilePictureUrl());
 			            dto.setMobile(emp.getMobile());
-
+                        dto.setEmpStatus(emp.getEmpStatus());
+                       
 			            // From User entity
 			            if (emp.getUser() != null) {
 			                dto.setEmail(emp.getUser().getEmail());
+			                dto.setUserEnabled(emp.getUser().isEnabled());
 			            }
 
 			            return dto;
@@ -422,10 +498,11 @@ public class AdminServiceImpl implements AdminService{
 			            dto.setSalary(emp.getSalary());
 			            dto.setProfilePictureUrl(emp.getProfilePictureUrl());
 			            dto.setMobile(emp.getMobile());
-
+			            dto.setEmpStatus(emp.getEmpStatus());
 			            // From User entity
 			            if (emp.getUser() != null) {
 			                dto.setEmail(emp.getUser().getEmail());
+			                dto.setUserEnabled(emp.getUser().isEnabled());
 			            }
 
 			            return dto;
@@ -450,13 +527,14 @@ public class AdminServiceImpl implements AdminService{
 		            dto.setJoiningDate(emp.getJoiningDate());
 		            dto.setSalary(emp.getSalary());
 		            dto.setProfilePictureUrl(emp.getProfilePictureUrl());
-
+		            dto.setEmpStatus(emp.getEmpStatus());
 		            // If mobile is in Employee
 		            dto.setMobile(emp.getMobile());
 
 		        
 		            if (emp.getUser() != null) {
 		                dto.setEmail(emp.getUser().getEmail());
+		                dto.setUserEnabled(emp.getUser().isEnabled());
 		            }
 
 		            return dto;
@@ -483,7 +561,8 @@ public class AdminServiceImpl implements AdminService{
 	            dto.setWebsite(client.getWebsite());
 	            dto.setIndustryType(client.getIndustryType());
 	            dto.setGstNumber(client.getGstNumber());
-
+                dto.setEmpStatus(client.getStatus());
+                dto.setUserEnabled(client.getUser().isEnabled());
 	            return dto;
 	        })
 	        .collect(Collectors.toList());
@@ -492,10 +571,7 @@ public class AdminServiceImpl implements AdminService{
 
 	@Override
 	public ClientProfileDto updateClient(Long clientId, UpdateClientRequest req) {
-		Client client = clientRepo.findById(clientId)
-                .orElseThrow(() ->
-                        new RuntimeException("Client not found with id: " + clientId));
-
+		Client client = clientRepo.findById(clientId).orElseThrow(() ->new RuntimeException("Client not found with id: " + clientId));
         client.setCompanyName(req.getCompanyName());
         client.setContactPerson(req.getContactPerson());
         client.setContactEmail(req.getContactEmail());
@@ -507,8 +583,7 @@ public class AdminServiceImpl implements AdminService{
         client.setGstNumber(req.getGstNumber());
         client.setUpdatedDate(LocalDate.now());
         Client save = clientRepo.save(client);
-        
-        return mapper.map(save, ClientProfileDto.class);
-		
+       return mapper.map(save, ClientProfileDto.class);
 	}
+
 }
