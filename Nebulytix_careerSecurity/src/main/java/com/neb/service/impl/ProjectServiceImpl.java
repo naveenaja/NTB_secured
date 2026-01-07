@@ -1,13 +1,12 @@
 package com.neb.service.impl;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
+
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,9 +21,9 @@ import com.neb.dto.project.ProjectsResponseDto;
 import com.neb.entity.Client;
 import com.neb.entity.Employee;
 import com.neb.entity.Project;
+import com.neb.entity.ProjectDocument;
 import com.neb.exception.CustomeException;
 import com.neb.exception.EmployeeNotFoundException;
-import com.neb.exception.FileStorageException;
 import com.neb.exception.ResourceNotFoundException;
 import com.neb.repo.ClientRepository;
 import com.neb.repo.EmployeeRepository;
@@ -33,6 +32,7 @@ import com.neb.repo.ProjectRepository;
 import com.neb.service.ClientService;
 import com.neb.service.ProjectService;
 //import com.neb.dto.project.ProjectsResponseDto;
+import com.neb.util.FileUtil;
 
 import jakarta.transaction.Transactional;
 
@@ -56,9 +56,8 @@ public class ProjectServiceImpl implements ProjectService {
     
     @Autowired
     private ModelMapper mapper;
-
-    // ✅ CHANGED: hardcoded projects directory (NO application.properties needed)
-    private static final String PROJECTS_DIR = "projects";
+    @Value("${project.file.upload-dir}")
+    private String uploadDir;
     
 
     @Override
@@ -223,7 +222,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .orElseThrow(() -> new CustomeException("Project not found with id: " + projectId));
 
         project.setStatus(status);
-        projectRepository.save(project);
+        Project save = projectRepository.save(project);
 
         return ProjectResponseDto.fromEntity(project);
     }
@@ -237,16 +236,17 @@ public class ProjectServiceImpl implements ProjectService {
         return projects.stream().map(ProjectResponseDto::fromEntity).toList();
     }
 
+
     @Override
     @Transactional
     public Project addProject(
             AddProjectRequestDto dto,
             MultipartFile quotation,
-            MultipartFile requirement,MultipartFile contract) {
+            MultipartFile requirement,
+            MultipartFile contract) {
 
         Client client = clientRepository.findById(dto.getClientId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Client not found with id " + dto.getClientId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Client not found with id " + dto.getClientId()));
 
         Project project = new Project();
         project.setClient(client);
@@ -263,6 +263,19 @@ public class ProjectServiceImpl implements ProjectService {
         project.setProgress(0);
         project.setCreatedDate(LocalDate.now());
 
+        // Save project first (so we have an ID to link documents)
+        Project savedProject = projectRepository.save(project);
+
+        //  Handle file uploads and create ProjectDocument entities
+        if (quotation != null && !quotation.isEmpty()) {
+            String path = FileUtil.upload(quotation, uploadDir);
+            ProjectDocument doc = new ProjectDocument();
+            doc.setFileName(quotation.getOriginalFilename());
+            doc.setFileUrl(path);
+            doc.setUploadedDate(LocalDate.now());
+            doc.setProject(savedProject);
+            docRepo.save(doc);
+        }
         // ✅ Files stored in projects/
         project.setQuotationPdfUrl(storeFile(quotation));
         project.setRequirementDocUrl(storeFile(requirement));
@@ -284,22 +297,30 @@ public class ProjectServiceImpl implements ProjectService {
             String safeFileName =
                     file.getOriginalFilename().replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
 
-            // CHANGED: always use projects directory
-            Path projectsPath = Path.of(PROJECTS_DIR);
-            Files.createDirectories(projectsPath);
-
-            Path finalPath =
-                    projectsPath.resolve(System.currentTimeMillis() + "_" + safeFileName);
-
-            Files.write(finalPath, file.getBytes());
-
-            return finalPath.toString();
-
-        } catch (Exception e) {
-            throw new FileStorageException(
-                    "Failed to upload file: " + file.getOriginalFilename(), e);
+        if (requirement != null && !requirement.isEmpty()) {
+            String path = FileUtil.upload(requirement, uploadDir);
+            ProjectDocument doc = new ProjectDocument();
+            doc.setFileName(requirement.getOriginalFilename());
+            doc.setFileUrl(path);
+            doc.setUploadedDate(LocalDate.now());
+            doc.setProject(savedProject);
+            docRepo.save(doc);
         }
+
+        if (contract != null && !contract.isEmpty()) {
+            String path = FileUtil.upload(contract, uploadDir);
+            ProjectDocument doc = new ProjectDocument();
+            doc.setFileName(contract.getOriginalFilename());
+            doc.setFileUrl(path);
+            doc.setUploadedDate(LocalDate.now());
+            doc.setProject(savedProject);
+            docRepo.save(doc);
+        }
+
+        return savedProject;
     }
+
+
 
 	@Override
 	public ProjectResponseDto addEmployeeToProject(Long projectId, Long employeeId) {

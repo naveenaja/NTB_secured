@@ -36,8 +36,15 @@ import com.neb.entity.EmployeeLogInDetails;
 import com.neb.entity.Payslip;
 import com.neb.entity.Users;
 import com.neb.entity.Work;
+import com.neb.exception.AlreadyCheckedOutException;
 import com.neb.exception.CustomeException;
+import com.neb.exception.EmployeeAlreadyLoggedInException;
 import com.neb.exception.EmployeeNotFoundException;
+import com.neb.exception.EmployeeNotLoggedInException;
+import com.neb.exception.InsufficientLeaveBalanceException;
+import com.neb.exception.InvalidDateRangeException;
+import com.neb.exception.WfhBalanceNotInitializedException;
+import com.neb.exception.WfhInsufficientBalanceException;
 import com.neb.repo.DailyReportRepository;
 import com.neb.repo.EmployeeLeaveBalanceRepo;
 import com.neb.repo.EmployeeLeavePolicyRepo;
@@ -48,6 +55,7 @@ import com.neb.repo.PayslipRepository;
 import com.neb.repo.UsersRepository;
 import com.neb.repo.WorkRepository;
 import com.neb.service.EmployeeService;
+import com.neb.service.NotificationService;
 import com.neb.util.ApprovalStatus;
 import com.neb.util.AuthUtils;
 import com.neb.util.EmployeeDayStatus;
@@ -70,6 +78,10 @@ public class EmployeeServiceImpl implements EmployeeService {
 	private EmployeeLeaveRepository empLeaveRepo;
     @Autowired
 	private EmployeeLeavePolicyRepo leavePolicyRepo;
+	@Autowired
+	private NotificationService notificationService;
+	
+	@Autowired
     @Autowired
 	private EmployeeLeaveBalanceRepo leaveBalanceRepo;
     @Autowired
@@ -362,13 +374,13 @@ public class EmployeeServiceImpl implements EmployeeService {
 
 	   
 	    Employee employee = employeeRepository.findById(employeeId)
-	            .orElseThrow(() -> new RuntimeException("Employee not found"));
+	            .orElseThrow(() -> new EmployeeNotFoundException("Employee not found"));
 
 	    EmployeeLogInDetails existing =
 	            empLoginRepo.findTopByEmployeeAndLogoutTimeIsNull(employee);
 
 	    if (existing != null) {
-	        throw new RuntimeException("Employee already logged in");
+	    	throw new EmployeeAlreadyLoggedInException("Employee already logged in");
 	    }
 
 	    List<EmployeeLogInDetails> allRecords =
@@ -380,7 +392,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 	                            && r.getLogoutTime() != null);
 
 	    if (checkedOutToday) {
-	        throw new RuntimeException("Employee already checked out today");
+	    	throw new AlreadyCheckedOutException("Employee already checked out today");
 	    }
 
 	    EmployeeLogInDetails login = new EmployeeLogInDetails();
@@ -425,13 +437,15 @@ public class EmployeeServiceImpl implements EmployeeService {
 
 	  
 	    Employee employee = employeeRepository.findById(employeeId)
-	            .orElseThrow(() -> new RuntimeException("Employee not found"));
+	            .orElseThrow(() -> new EmployeeNotFoundException("Employee not found"));
+	    
+
 
 	    EmployeeLogInDetails details =
 	            empLoginRepo.findTopByEmployeeAndLogoutTimeIsNull(employee);
 
 	    if (details == null) {
-	        throw new RuntimeException("Employee not logged in");
+	    	throw new EmployeeNotLoggedInException("Employee not logged in");
 	    }
 
 	    LocalDateTime logoutTime = LocalDateTime.now();
@@ -472,97 +486,238 @@ public class EmployeeServiceImpl implements EmployeeService {
 	}
 	
 
-	public EmployeeLeaveDTO applyLeave(EmployeeLeaveDTO empLeaveDto) {
-
-	    Employee employee = employeeRepository.findById(empLeaveDto.getId())
-	            .orElseThrow(() -> new EmployeeNotFoundException("Invalid Employee Id"));
-        System.out.println("+++++++++++++++++"+employee);
-	    if (empLeaveDto.getEnd().isBefore(empLeaveDto.getStart())) {
-	        throw new RuntimeException("End date cannot be before start date");
-	    }
-	    EmployeeLeaveBalance leaveBalance = leaveBalanceRepo
-	            .findByEmployeeAndLeaveTypeAndCurrentYear(employee, empLeaveDto.getLeaveType(), LocalDate.now().getYear())
-	            .orElseThrow(() -> new RuntimeException("Leave balance not initialized"));
-	    System.out.println("++++++++++++++++++++"+leaveBalance);
-	    // +1 because leave from 1st to 1st is 1 day
-	    long requestedDays = ChronoUnit.DAYS.between(empLeaveDto.getStart(), empLeaveDto.getEnd()) + 1;
-	    
-	    //Updating the Employee Leaves Details in the EmployeeLeaves Repo
-	    EmployeeLeaves empLeaves = new EmployeeLeaves();
-	    empLeaves.setEmployee(employee);
-	    empLeaves.setAppliedDate(LocalDate.now());
-	    empLeaves.setStartDate(empLeaveDto.getStart());
-	    empLeaves.setEndDate(empLeaveDto.getEnd());
-	    empLeaves.setLeaveStatus(ApprovalStatus.PENDING);
-	    empLeaves.setReason(empLeaveDto.getReason());
-	    empLeaves.setLeaveType(empLeaveDto.getLeaveType());
-	    empLeaves.setCurrentMonth(LocalDate.now().getMonthValue());
-	    empLeaves.setCurrentYear(LocalDate.now().getYear());
-	    empLeaves.setTotalDays(requestedDays);
-	    
-	    EmployeeLeaves emp = empLeaveRepo.save(empLeaves);
-	    
-	    if (leaveBalance.getRemaining() < requestedDays) {
-	        throw new RuntimeException("Insufficient leave balance");
-	    }
-
-	   leaveBalanceRepo.save(leaveBalance);
-	    
-	    EmployeeLeaveDTO empResDto = new EmployeeLeaveDTO();
-	   
-	    empResDto.setStart(emp.getStartDate());
-	    empResDto.setEnd(emp.getEndDate());
-	    empResDto.setId(emp.getId());  //leave id used for approval leave request by hr
-	    empResDto.setLeaveStatus(ApprovalStatus.PENDING);
-	    empResDto.setReason(emp.getReason());
-	    empResDto.setTotalDays(requestedDays);
-	    empResDto.setLeaveType(emp.getLeaveType());
-	    empResDto.setEmployeeId(emp.getEmployee().getId());//employee id to Display
-
-	    return empResDto;
-	}
-	  
-
+//	public EmployeeLeaveDTO applyLeave(EmployeeLeaveDTO empLeaveDto) {
+//
+//	    Employee employee = employeeRepository.findById(empLeaveDto.getId())
+//	            .orElseThrow(() -> new EmployeeNotFoundException("Invalid Employee Id"));
+//	    if (empLeaveDto.getEnd().isBefore(empLeaveDto.getStart())) {
+//	    	throw new InvalidDateRangeException("End date cannot be before start date");
+//	    }
+//	    EmployeeLeaveBalance leaveBalance = leaveBalanceRepo
+//	            .findByEmployeeAndLeaveTypeAndCurrentYear(employee, empLeaveDto.getLeaveType(), LocalDate.now().getYear())
+//	            .orElseThrow(() -> new RuntimeException("Leave balance not initialized"));
+//	    // +1 because leave from 1st to 1st is 1 day
+//	    long requestedDays = ChronoUnit.DAYS.between(empLeaveDto.getStart(), empLeaveDto.getEnd()) + 1;
+//	    
+//	    //Updating the Employee Leaves Details in the EmployeeLeaves Repo
+//	    EmployeeLeaves empLeaves = new EmployeeLeaves();
+//	    empLeaves.setEmployee(employee);
+//	    empLeaves.setAppliedDate(LocalDate.now());
+//	    empLeaves.setStartDate(empLeaveDto.getStart());
+//	    empLeaves.setEndDate(empLeaveDto.getEnd());
+//	    empLeaves.setLeaveStatus(ApprovalStatus.PENDING);
+//	    empLeaves.setReason(empLeaveDto.getReason());
+//	    empLeaves.setLeaveType(empLeaveDto.getLeaveType());
+//	    empLeaves.setCurrentMonth(LocalDate.now().getMonthValue());
+//	    empLeaves.setCurrentYear(LocalDate.now().getYear());
+//	    empLeaves.setTotalDays(requestedDays);
+//	    
+//	    EmployeeLeaves emp = empLeaveRepo.save(empLeaves);
+//	    notificationService.notifyHrLeaveApplied(emp);
+//	    
+//	    if (leaveBalance.getRemaining() < requestedDays) {
+//	    	throw new InsufficientLeaveBalanceException("Insufficient leave balance");
+//	    }
+//
+//	   leaveBalanceRepo.save(leaveBalance);
+//	    
+//	    EmployeeLeaveDTO empResDto = new EmployeeLeaveDTO();
+//	   
+//	    empResDto.setStart(emp.getStartDate());
+//	    empResDto.setEnd(emp.getEndDate());
+//	    empResDto.setId(emp.getId());  //leave id used for approval leave request by hr
+//	    empResDto.setLeaveStatus(ApprovalStatus.PENDING);
+//	    empResDto.setReason(emp.getReason());
+//	    empResDto.setTotalDays(requestedDays);
+//	    empResDto.setLeaveType(emp.getLeaveType());
+//	    empResDto.setEmployeeId(emp.getEmployee().getId());//employee id to Display
+//
+//	    return empResDto;
+//	}
 	@Transactional
-	   @Override
-	   public EmployeeLeaveDTO applyWFH(EmployeeLeaveDTO wfh) {
+	@Override
+	public EmployeeLeaveDTO applyLeave(EmployeeLeaveDTO dto) {
 
-	       // 1️⃣ Validate Dates
-	       if (wfh.getEnd().isBefore(wfh.getStart())) {
-	           throw new IllegalArgumentException("End date cannot be before start date");
-	       }
+	    // 1️⃣ Validate dates
+	    if (dto.getEnd().isBefore(dto.getStart())) {
+	        throw new InvalidDateRangeException("End date cannot be before start date");
+	    }
+
+	    // 2️⃣ Fetch Employee USING employeeId ONLY
+	    Employee employee = employeeRepository.findById(dto.getEmployeeId())
+	            .orElseThrow(() -> new EmployeeNotFoundException("Invalid Employee Id"));
+
+	    int year = LocalDate.now().getYear();
+
+	    // 3️⃣ Fetch Leave Balance
+	    EmployeeLeaveBalance balance =
+	            leaveBalanceRepo.findByEmployeeAndLeaveTypeAndCurrentYear(
+	                    employee, dto.getLeaveType(), year
+	            ).orElseThrow(() ->
+	                    new RuntimeException("Leave balance not initialized")
+	            );
+
+	    // 4️⃣ Calculate days
+	    long requestedDays =
+	            ChronoUnit.DAYS.between(dto.getStart(), dto.getEnd()) + 1;
+
+	    if (balance.getRemaining() < requestedDays) {
+	        throw new InsufficientLeaveBalanceException("Insufficient leave balance");
+	    }
+
+	    // 5️⃣ Save Leave
+	    EmployeeLeaves leave = new EmployeeLeaves();
+	    leave.setEmployee(employee);                 // ✅ CRITICAL
+	    leave.setLeaveType(dto.getLeaveType());
+	    leave.setLeaveStatus(ApprovalStatus.PENDING);
+	    leave.setStartDate(dto.getStart());
+	    leave.setEndDate(dto.getEnd());
+	    leave.setReason(dto.getReason());
+	    leave.setTotalDays(requestedDays);
+	    leave.setCurrentYear(year);
+	    leave.setCurrentMonth(LocalDate.now().getMonthValue());
+	    leave.setAppliedDate(LocalDate.now());
+
+	    EmployeeLeaves savedLeave = empLeaveRepo.save(leave);
+
+	    // 6️⃣ Notify HR
+	    notificationService.notifyHrLeaveApplied(savedLeave);
+
+	    // 7️⃣ Response DTO
+	    EmployeeLeaveDTO response = new EmployeeLeaveDTO();
+	    response.setId(savedLeave.getId());                 // Leave ID
+	    response.setEmployeeId(employee.getId());           // Employee ID
+	    response.setLeaveType(savedLeave.getLeaveType());
+	    response.setStart(savedLeave.getStartDate());
+	    response.setEnd(savedLeave.getEndDate());
+	    response.setReason(savedLeave.getReason());
+	    response.setTotalDays(savedLeave.getTotalDays());
+	    response.setLeaveStatus(savedLeave.getLeaveStatus());
+
+	    return response;
+	}
 
 
-	       Employee employee = employeeRepository
-	    		    .findByUserId(wfh.getEmployeeId())
-	    		    .orElseThrow(() -> new EmployeeNotFoundException("Invalid Employee Id"));
 
+//	  
+//
+//	@Transactional
+//	   @Override
+//	   public EmployeeLeaveDTO applyWFH(EmployeeLeaveDTO wfh) {
+//
+//	       // 1️ Validate Dates
+//	       if (wfh.getEnd().isBefore(wfh.getStart())) {
+//	           throw new IllegalArgumentException("End date cannot be before start date");
+//	       }
+//
+//
+//	       Employee employee = employeeRepository
+//	    		    .findByUserId(wfh.getEmployeeId())
+//	    		    .orElseThrow(() -> new EmployeeNotFoundException("Invalid Employee Id"));
+//
+//
+//	       // 3️ Get Current Year
+//	       int year = LocalDate.now().getYear();
+//
+//	       // 4️ Fetch Leave Balance for WFH (same pattern as applyLeave)
+//	       EmployeeLeaveBalance wfhBalance = leaveBalanceRepo
+//	               .findByEmployeeAndLeaveTypeAndCurrentYear(
+//	                       employee,
+//	                       wfh.getLeaveType(),
+//	                       year
+//	               )
+//	               .orElseThrow(() ->new WfhBalanceNotInitializedException("WFH balance not initialized for employee"));
+//
+//	       // 5️ Calculate Requested Days
+//	       long requestedDays = ChronoUnit.DAYS.between(wfh.getStart(), wfh.getEnd()) + 1;
+//
+//	       // 6️ Balance Check
+//	       if (wfhBalance.getRemaining() < requestedDays) {
+//	    	   throw new WfhInsufficientBalanceException("Insufficient WFH balance, only " + wfhBalance.getRemaining() + " days left");
+//	       }
+//
+//	       // 7️ Deduct WFH balance
+//	       wfhBalance.setUsed(wfhBalance.getUsed() + requestedDays);
+//	       wfhBalance.setRemaining(wfhBalance.getRemaining() - requestedDays);
+//	       leaveBalanceRepo.save(wfhBalance);
+//
+//	       // 8️ Save Leave Request
+//	       EmployeeLeaves leave = new EmployeeLeaves();
+//	       leave.setEmployee(employee);
+//	       leave.setLeaveType(wfh.getLeaveType());
+//	       leave.setStartDate(wfh.getStart());
+//	       leave.setEndDate(wfh.getEnd());
+//	       leave.setReason(wfh.getReason());
+//	       leave.setTotalDays(requestedDays);
+//	       leave.setAppliedDate(LocalDate.now());
+//	       leave.setCurrentYear(year);
+//	       leave.setCurrentMonth(LocalDate.now().getMonthValue());
+//
+//	       EmployeeLeaves saved = empLeaveRepo.save(leave);
+//
+//	       // 9️ Prepare Response
+//	       EmployeeLeaveDTO dto = new EmployeeLeaveDTO();
+//	       dto.setId(saved.getId());
+//	       dto.setId(employee.getId());
+//	       dto.setLeaveType(saved.getLeaveType());
+//	       dto.setStart(saved.getStartDate());
+//	       dto.setEnd(saved.getEndDate());
+//	       dto.setReason(saved.getReason());
+//	       dto.setTotalDays(requestedDays);
+//
+//	       return dto;
+//	   }
+	@Transactional
+	@Override
+	public EmployeeLeaveDTO applyWFH(EmployeeLeaveDTO wfh) {
 
-	       // 3️⃣ Get Current Year
-	       int year = LocalDate.now().getYear();
+	    
+	    if (wfh.getEnd().isBefore(wfh.getStart())) {
+	        throw new IllegalArgumentException("End date cannot be before start date");
+	    }
 
-	       // 4️⃣ Fetch Leave Balance for WFH (same pattern as applyLeave)
-	       EmployeeLeaveBalance wfhBalance = leaveBalanceRepo
-	               .findByEmployeeAndLeaveTypeAndCurrentYear(
-	                       employee,
-	                       wfh.getLeaveType(),
-	                       year
-	               )
-	               .orElseThrow(() -> new RuntimeException("WFH balance not initialized for employee"));
+	  
+//	    Employee employee = employeeRepository
+//	            .findByUserId(wfh.getEmployeeId())
+//	            .orElseThrow(() -> new EmployeeNotFoundException("Invalid Employee Id"));
+	    Employee employee = employeeRepository.findById(wfh.getId())
+	            .orElseThrow(() -> new EmployeeNotFoundException("Invalid Employee Id"));
+	   
 
-	       // 5️⃣ Calculate Requested Days
-	       long requestedDays = ChronoUnit.DAYS.between(wfh.getStart(), wfh.getEnd()) + 1;
+	   
+	    int year = LocalDate.now().getYear();
 
-	       // 6️⃣ Balance Check
-	       if (wfhBalance.getRemaining() < requestedDays) {
-	           throw new RuntimeException("Insufficient WFH balance, only " + wfhBalance.getRemaining() + " days left");
-	       }
+	  
+	    EmployeeLeaveBalance wfhBalance = leaveBalanceRepo
+	            .findByEmployeeAndLeaveTypeAndCurrentYear(
+	                    employee,
+	                    wfh.getLeaveType(),
+	                    year
+	            )
+	            .orElseThrow(() ->
+	                    new WfhBalanceNotInitializedException("WFH balance not initialized for employee"));
 
-	       // 7️⃣ Deduct WFH balance
-	       wfhBalance.setUsed(wfhBalance.getUsed() + requestedDays);
-	       wfhBalance.setRemaining(wfhBalance.getRemaining() - requestedDays);
-	       leaveBalanceRepo.save(wfhBalance);
+	
+	    long requestedDays =
+	            ChronoUnit.DAYS.between(wfh.getStart(), wfh.getEnd()) + 1;
 
+	 
+	    if (wfhBalance.getRemaining() < requestedDays) {
+	        throw new WfhInsufficientBalanceException(
+	                "Insufficient WFH balance, only " + wfhBalance.getRemaining() + " days left");
+	    }
+
+	  
+	    EmployeeLeaves leave = new EmployeeLeaves();
+	    leave.setEmployee(employee);
+	    leave.setLeaveType(wfh.getLeaveType());
+	    leave.setStartDate(wfh.getStart());
+	    leave.setEndDate(wfh.getEnd());
+	    leave.setReason(wfh.getReason());
+	    leave.setTotalDays(requestedDays);
+	    leave.setAppliedDate(LocalDate.now());
+	    leave.setCurrentYear(year);
+	    leave.setCurrentMonth(LocalDate.now().getMonthValue());
 	       // 8️⃣ Save Leave Request
 	       EmployeeLeaves leave = new EmployeeLeaves();
 	       leave.setEmployee(employee);
@@ -575,8 +730,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 	       leave.setCurrentYear(year);
 	       leave.setCurrentMonth(LocalDate.now().getMonthValue());
 
-	       EmployeeLeaves saved = empLeaveRepo.save(leave);
+	    leave.setLeaveStatus(ApprovalStatus.PENDING);
 
+	    EmployeeLeaves saved = empLeaveRepo.save(leave);
 	       // 9️⃣ Prepare Response
 	       EmployeeLeaveDTO dto = new EmployeeLeaveDTO();
 	       dto.setId(saved.getId());
@@ -587,10 +743,22 @@ public class EmployeeServiceImpl implements EmployeeService {
 	       dto.setReason(saved.getReason());
 	       dto.setTotalDays(requestedDays);
 
-	       return dto;
-	   }
+	   
+	    notificationService.notifyHrLeaveApplied(saved);
 
+	    
+	    EmployeeLeaveDTO dto = new EmployeeLeaveDTO();
+	    dto.setId(saved.getId());                  // leave id
+	    dto.setEmployeeId(employee.getId());       // 🔴 FIXED
+	    dto.setLeaveType(saved.getLeaveType());
+	    dto.setStart(saved.getStartDate());
+	    dto.setEnd(saved.getEndDate());
+	    dto.setReason(saved.getReason());
+	    dto.setTotalDays(requestedDays);
+	    dto.setLeaveStatus(ApprovalStatus.PENDING);
 
+	    return dto;
+	}
 
 
 	@Override
@@ -631,7 +799,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 	        response.setPaidLeaves(employee.getPaidLeaves());
             response.setDepartment(employee.getDepartment());
             response.setDesignation(employee.getDesignation());
-	        // User data
+//	         User data
 	        Users user1 = employee.getUser();
 	        if (user1 != null) {
 	            response.setEmail(user1.getEmail());
@@ -640,5 +808,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 
           return response;
 	}
+
 }
 	       
