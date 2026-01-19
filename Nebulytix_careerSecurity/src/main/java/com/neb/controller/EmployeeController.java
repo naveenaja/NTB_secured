@@ -47,11 +47,9 @@ public class EmployeeController {
 	
 	@Autowired
 	private EmployeeService employeeService;
-	
 	@Autowired
 	private EmployeeBankDetailsService bankService;
-	
-	@Autowired
+    @Autowired
 	private ProjectService projectService;
 	
 	@GetMapping("/me")
@@ -103,22 +101,18 @@ public class EmployeeController {
    }
     
     @PutMapping("/{id}/profile-picture")
-    public ResponseEntity<ResponseMessage<String>> uploadProfilePicture(
-            @PathVariable Long id,
-            @RequestParam("profileImage") MultipartFile profileImage) {
-
+    public ResponseEntity<ResponseMessage<String>> uploadProfilePicture(@PathVariable Long id,@RequestParam("profileImage") MultipartFile profileImage) {
         String imageUrl = employeeService.uploadProfilePicture(id, profileImage);
         return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(), HttpStatus.OK.name(),"Profile picture uploaded successfully", imageUrl));
     }
+    
     @DeleteMapping("/{id}/profile-picture")
     public ResponseEntity<ResponseMessage<String>> deleteProfilePicture(@PathVariable Long id) {
         boolean deleted = employeeService.deleteProfilePicture(id);
         if (deleted) {
-          return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(),HttpStatus.OK.name(),"Profile picture deleted successfully","Profile image removed from database and folder"));
-        } 
+          return ResponseEntity.ok(new ResponseMessage<>(HttpStatus.OK.value(),HttpStatus.OK.name(),"Profile picture deleted successfully","Profile image removed from database and folder")); } 
         else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseMessage<>(HttpStatus.NOT_FOUND.value(),HttpStatus.NOT_FOUND.name(),"Profile picture not found",null));
-        }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseMessage<>(HttpStatus.NOT_FOUND.value(),HttpStatus.NOT_FOUND.name(),"Profile picture not found",null)); }
     }
 
     @GetMapping("/{employeeId}/active-projects")
