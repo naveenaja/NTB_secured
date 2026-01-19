@@ -34,6 +34,7 @@ import com.neb.service.ClientService;
 import com.neb.service.ProjectService;
 //import com.neb.dto.project.ProjectsResponseDto;
 import com.neb.util.FileUtil;
+import com.neb.util.ProjectStatus;
 
 import jakarta.transaction.Transactional;
 
@@ -72,7 +73,7 @@ public class ProjectServiceImpl implements ProjectService {
 
                     ProjectsResponseDto dto = new ProjectsResponseDto();
 
-                    // 🔹 Project fields
+                    //  Project fields
                     dto.setId(project.getId());
                     dto.setProjectName(project.getProjectName());
                     dto.setProjectCode(project.getProjectCode());
@@ -89,7 +90,7 @@ public class ProjectServiceImpl implements ProjectService {
                     dto.setContractPdfUrl(project.getContractPdfUrl());
                     dto.setRequirementDocUrl(project.getRequirementDocUrl());
 
-                    // ✅ CLIENT MAPPING
+                    //  CLIENT MAPPING
                     if (project.getClient() != null) {
                         Client client = project.getClient();
 
@@ -132,7 +133,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     	    ProjectsResponseDto dto = new ProjectsResponseDto();
 
-    	    // 🔹 Project fields
+    	    //  Project fields
     	    dto.setId(project.getId());
     	    dto.setProjectName(project.getProjectName());
     	    dto.setProjectCode(project.getProjectCode());
@@ -149,7 +150,7 @@ public class ProjectServiceImpl implements ProjectService {
     	    dto.setContractPdfUrl(project.getContractPdfUrl());
     	    dto.setRequirementDocUrl(project.getRequirementDocUrl());
 
-    	    // ✅ CLIENT MAPPING (NO fromEntity)
+    	    //  CLIENT MAPPING (NO fromEntity)
     	    if (project.getClient() != null) {
     	        Client client = project.getClient();
 
@@ -170,7 +171,7 @@ public class ProjectServiceImpl implements ProjectService {
     	        dto.setClient(clientDto);
     	    }
 
-    	    // ✅ EMPLOYEE LIST MAPPING (NO fromEntity)
+    	    //  EMPLOYEE LIST MAPPING (NO fromEntity)
     	    if (project.getEmployees() != null && !project.getEmployees().isEmpty()) {
     	        List<EmployeeProfileDto> employeeDtos = clientService.getEmployeesByProject(id);
     	        dto.setEmployees(employeeDtos);
@@ -220,11 +221,11 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional
-    public ProjectResponseDto updateProjectStatus(Long projectId, String status) {
+  public  ProjectResponseDto updateProjectStatus(Long projectId, ProjectStatus status) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new CustomeException("Project not found with id: " + projectId));
 
-        project.setStatus(status);
+        project.setStatus(ProjectStatus.PLANNED);
         Project save = projectRepository.save(project);
 
         return ProjectResponseDto.fromEntity(project);
@@ -262,7 +263,7 @@ public class ProjectServiceImpl implements ProjectService {
         project.setPriority(dto.getPriority());
         project.setBudget(dto.getBudget());
         project.setRiskLevel(dto.getRiskLevel());
-        project.setStatus("PLANNED");
+        project.setStatus(ProjectStatus.PLANNED);
         project.setProgress(0);
         project.setCreatedDate(LocalDate.now());
 
