@@ -669,7 +669,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 				mpr.setLoginTime(regulation.getLoginTime());
 				mpr.setLogoutTime(regulation.getLogoutTime());
 				
-				MisPunchRequestRepo.save(mpr);
+				misPunchRequestRepo.save(mpr);
 				
 			}else {
 				throw new RuntimeException("cannot regularize");
