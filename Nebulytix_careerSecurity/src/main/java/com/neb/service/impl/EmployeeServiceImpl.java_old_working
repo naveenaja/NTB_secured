@@ -61,25 +61,39 @@ import com.neb.util.AuthUtils;
 import com.neb.util.EmployeeDayStatus;
 import com.neb.util.EmployeeLeaveType;
 import com.neb.util.PdfGeneratorUtil;
-import lombok.RequiredArgsConstructor;
+
 import jakarta.transaction.Transactional;
 
 @Service
-@Transactional
-@RequiredArgsConstructor
 public class EmployeeServiceImpl implements EmployeeService {
 
-    private final EmployeeRepository employeeRepository;
-    private final PayslipRepository payslipRepo;
-    private final EmployeeLoginDetailsRepo empLoginRepo;
-    private final ModelMapper mapper;
-    private final EmployeeLeaveRepository empLeaveRepo;
-    private final NotificationService notificationService;
-    private final MisPunchRequestRepo misPunchRequestRepo;
-    private final EmployeeLeaveBalanceRepo leaveBalanceRepo;
-    private final WorkRepository workRepository;
-    private final DailyReportRepository dailyReportRepository;
-    private final UsersRepository usersRepository;
+    @Autowired
+    private EmployeeRepository employeeRepository;
+    @Autowired
+    private PayslipRepository payslipRepo;
+    @Autowired
+	private EmployeeLoginDetailsRepo empLoginRepo;
+    @Autowired
+    private ModelMapper mapper;
+    @Autowired
+	private EmployeeLeaveRepository empLeaveRepo;
+//    @Autowired
+//	private EmployeeLeavePolicyRepo leavePolicyRepo;
+	@Autowired
+	private NotificationService notificationService;
+	@Autowired
+private MisPunchRequestRepo MisPunchRequestRepo;
+	
+	
+    @Autowired
+	private EmployeeLeaveBalanceRepo leaveBalanceRepo;
+    @Autowired
+    private WorkRepository workRepository;
+    @Autowired
+    private DailyReportRepository dailyReportRepository;
+    @Autowired
+    private UsersRepository usersRepository;
+
     
     @Value("${payslip.base-folder}")
     private String baseFolder;
