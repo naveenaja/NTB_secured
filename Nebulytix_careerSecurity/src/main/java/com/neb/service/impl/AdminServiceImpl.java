@@ -143,50 +143,69 @@ public class AdminServiceImpl implements AdminService{
     
            //adding work 
     public String assignWork(AddWorkRequestDto request,MultipartFile file) {
-        Employee emp = empRepo.findById(request.getEmployeeId())
-                .orElseThrow(() -> new CustomeException("Employee not found with id :"+request.getEmployeeId()));
+       Employee emp = empRepo.findById(request.getEmployeeId())
+	            .orElseThrow(() ->
+	                    new CustomeException("Employee not found with id :" + request.getEmployeeId()));
 
-        Work work = new Work();
-        work.setTitle(request.getTitle());
-        work.setDescription(request.getDescription());
-        work.setAssignedDate(LocalDate.now());
-        work.setDueDate(request.getDueDate());
-        work.setStatus(WorkStatus.ASSIGNED);
-        work.setEmployee(emp);
-        
-        if (file != null && !file.isEmpty()) {
-            // validate PDF
-            if (!"application/pdf".equals(file.getContentType())) {
-                throw new CustomeException("Only PDF attachment allowed");
-            }
-            
-            try {
-            	// ensure directory exists
-                Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
-                Files.createDirectories(uploadPath);
+	    Work work = new Work();
+	    work.setTitle(request.getTitle());
+	    work.setEstimatedHours(request.getEstimatedHours());
+	    work.setDescription(request.getDescription());
+	    work.setAssignedDate(LocalDate.now());
+	    work.setDueDate(request.getDueDate());
+	    work.setStatus(WorkStatus.IN_PROGRESS);
+	    work.setEmployee(emp);
+	    Project project = projectRepo.findById(request.getProject_id())
+	            .orElseThrow(() -> new RuntimeException("Project not found"));
 
-                String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
-                // optionally add unique suffix
-                String fileName = System.currentTimeMillis() + "_" + originalFilename;
-                Path filePath = uploadPath.resolve(fileName);
-                Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+	    work.setProject(project);
+	  
+	    if (file != null && !file.isEmpty()) {
 
-                // set URL or path in work
-                work.setAttachmentUrl("/uploads/tasks/" + fileName);
+	        // ✅ Validate content type
+	        if (!"application/pdf".equalsIgnoreCase(file.getContentType())) {
+	            throw new CustomeException("Only PDF attachment allowed");
+	        }
 
-            }catch (IOException ex) {
-                throw new CustomeException("Could not store file. Error: " + ex.getMessage());
-            }
-        }
-        
-        Work savedWork = workRepo.save(work);
-        
-        if(savedWork!=null) {
-        	return "Task Assigned Successfully";
-        }
-        else
-        return "failed to assign task";
-    }
+	        try {
+	            // ✅ Ensure upload directory exists
+	            Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+	            Files.createDirectories(uploadPath);
+
+	            // ✅ Extract & validate extension (do NOT trust filename)
+	            String extension = ".pdf"; // forced since only PDF is allowed
+
+	            // ✅ Generate safe server-side filename
+	            String safeFileName = UUID.randomUUID() + extension;
+
+	            // ✅ Resolve & normalize path
+	            Path targetPath = uploadPath.resolve(safeFileName).normalize();
+
+	            // ✅ Prevent path traversal
+	            if (!targetPath.startsWith(uploadPath)) {
+	                throw new CustomeException("Invalid file path detected");
+	            }
+
+	            // ✅ Save file
+	            Files.copy(
+	                    file.getInputStream(),
+	                    targetPath,
+	                    StandardCopyOption.REPLACE_EXISTING
+	            );
+
+	            // ✅ Store relative path / URL for frontend
+	            work.setAttachmentUrl("/uploads/tasks/" + safeFileName);
+
+	        } catch (IOException ex) {
+	            throw new CustomeException("Could not store file. Error: " + ex.getMessage());
+	        }
+	    }
+
+	    Work savedWork = workRepo.save(work);
+
+	    return savedWork != null
+	            ? "Task Assigned Successfully"
+	            : "Failed to assign task";    }
 
     public List<WorkResponseDto> getAllWorks(Long empId) {
     	List<Work> allWork = workRepo.findByEmployeeId(empId);
