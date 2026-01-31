@@ -11,4 +11,6 @@ public class AddWorkRequestDto {
     private String description;
     private LocalDate dueDate;
     private Long employeeId;
+    private Integer estimatedHours;
+    private Long project_id;
 }
