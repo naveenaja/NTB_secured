@@ -59,11 +59,16 @@ public class Work {
     private Employee employee;
     
     private String attachmentUrl;
+    @Column(name = "estimated_hours", nullable = false)
+    private Integer estimatedHours;
 
-	public void setProject(Project project) {
-		// TODO Auto-generated method stub
+	@ManyToOne
+    @JoinColumn(name = "project_id", nullable = false)
+    private Project project;
+	// public void setProject(Project project) {
+	// 	// TODO Auto-generated method stub
 		
-	}
+	// }
 
 	public static Optional<Users> stream() {
 		// TODO Auto-generated method stub
